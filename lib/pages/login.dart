@@ -177,7 +177,7 @@ class _LoginState extends State<Login> {
                                         style: TextStyle(
                                           color: Colors.white,
                                           fontSize: 18,
-                                          fontWeight: FontWeight.bold,
+                                          // fontWeight: FontWeight.bold,
                                         ),
                                       ),
                                     ),
