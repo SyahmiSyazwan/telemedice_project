@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:telemedice_project/auth/shared.pref.dart';
 
 class AuthMethods {
   final FirebaseAuth auth = FirebaseAuth.instance;
@@ -10,6 +11,8 @@ class AuthMethods {
 
   Future SignOut() async {
     await FirebaseAuth.instance.signOut();
+    // Clear all saved data on logout
+    await SharedPreferenceHelper().clearAllData();
   }
 
   Future deleteuser() async {
