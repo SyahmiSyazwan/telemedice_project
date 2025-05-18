@@ -1,5 +1,3 @@
-// ignore_for_file: unnecessary_new
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:telemedice_project/pages/signup.dart';
@@ -39,7 +37,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: const Color.fromARGB(255, 41, 41, 41),
       body: Container(
         child: Column(
           children: [
