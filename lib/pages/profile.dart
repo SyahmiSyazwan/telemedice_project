@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -25,8 +26,6 @@ class _ProfileState extends State<Profile> {
   @override
   void initState() {
     super.initState();
-    SharedPreferenceHelper().saveUserName('Kwek Jia Cong');
-    SharedPreferenceHelper().saveUserEmail('kwekcong@graduate.utm.my');
     nameController = TextEditingController();
     emailController = TextEditingController();
     getSharedPrefs();
@@ -62,11 +61,28 @@ class _ProfileState extends State<Profile> {
   }
 
   getSharedPrefs() async {
+    final user = FirebaseAuth.instance.currentUser;
+
+    // Fallback if SharedPreferences is empty
+    if (user != null) {
+      name = await SharedPreferenceHelper().getUserName() ?? user.displayName;
+      email = await SharedPreferenceHelper().getUserEmail() ?? user.email;
+    }
+
     profile = await SharedPreferenceHelper().getUserProfile();
-    name = await SharedPreferenceHelper().getUserName();
-    email = await SharedPreferenceHelper().getUserEmail();
-    nameController.text = name ?? "";
-    emailController.text = email ?? "";
+
+    name ??= user?.displayName ?? "User Name";
+    email ??= user?.email ?? "user@email.com";
+
+    if ((await SharedPreferenceHelper().getUserName()) == null) {
+      await SharedPreferenceHelper().saveUserName(name!);
+    }
+    if ((await SharedPreferenceHelper().getUserEmail()) == null) {
+      await SharedPreferenceHelper().saveUserEmail(email!);
+    }
+
+    nameController.text = name!;
+    emailController.text = email!;
     setState(() {
       _isLoading = false;
     });
