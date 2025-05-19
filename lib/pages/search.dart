@@ -75,7 +75,8 @@ class _SearchState extends State<Search> {
                   borderRadius: BorderRadius.circular(20),
                   borderSide: BorderSide.none,
                 ),
-                contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 20),
+                contentPadding:
+                    const EdgeInsets.symmetric(vertical: 0, horizontal: 20),
               ),
               onChanged: (val) {
                 setState(() {
@@ -93,8 +94,8 @@ class _SearchState extends State<Search> {
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
                   mainAxisSpacing: 16,
-                  crossAxisSpacing: 16,
-                  childAspectRatio: 3 / 4,
+                  crossAxisSpacing: 5,
+                  childAspectRatio: 2 / 3,
                 ),
                 itemBuilder: (context, index) {
                   final doctor = filteredDoctors[index];

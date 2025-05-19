@@ -1,22 +1,28 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:telemedice_project/auth/shared.pref.dart';
 
 class AuthMethods {
-  final FirebaseAuth auth = FirebaseAuth.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  getCurrentUser() async {
-    return await auth.currentUser;
+  /// 获取当前用户
+  User? getCurrentUser() {
+    return _auth.currentUser;
   }
 
-  Future SignOut() async {
-    await FirebaseAuth.instance.signOut();
-    // Clear all saved data on logout
-    await SharedPreferenceHelper().clearAllData();
+  /// 登出并清除缓存
+  Future<void> signOut() async {
+    await _auth.signOut();
+    await SharedPreferenceHelper().clear(); // 确保你定义了这个方法
   }
 
-  Future deleteuser() async {
-    User? user = await FirebaseAuth.instance.currentUser;
-    user?.delete();
+  /// 删除当前用户
+  Future<void> deleteUser() async {
+    try {
+      User? user = _auth.currentUser;
+      await user?.delete();
+    } on FirebaseAuthException catch (e) {
+      print("Delete user failed: ${e.code} - ${e.message}");
+      rethrow;
+    }
   }
 }

@@ -280,46 +280,53 @@ class _ProfileState extends State<Profile> {
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: [
-                                  ElevatedButton(
-                                    onPressed: () =>
-                                        Navigator.pop(context, false),
-                                    style: ElevatedButton.styleFrom(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 40, vertical: 12),
-                                      backgroundColor: Colors.white,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(8),
+                                  Expanded(
+                                    child: ElevatedButton(
+                                      onPressed: () =>
+                                          Navigator.pop(context, false),
+                                      style: ElevatedButton.styleFrom(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 20, vertical: 12),
+                                        backgroundColor: Colors.white,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                        ),
+                                        side: const BorderSide(
+                                            color: Colors.black),
                                       ),
-                                      side:
-                                          const BorderSide(color: Colors.black),
-                                    ),
-                                    child: const Text(
-                                      "Cancel",
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        color: Colors.black,
-                                        fontWeight: FontWeight.bold,
+                                      child: const Text(
+                                        "Cancel",
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          color: Colors.black,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
                                     ),
                                   ),
-                                  ElevatedButton(
-                                    onPressed: () =>
-                                        Navigator.pop(context, true),
-                                    style: ElevatedButton.styleFrom(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 50, vertical: 12),
-                                      backgroundColor: Colors.white,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(8),
+                                  Expanded(
+                                    child: ElevatedButton(
+                                      onPressed: () =>
+                                          Navigator.pop(context, true),
+                                      style: ElevatedButton.styleFrom(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 20, vertical: 12),
+                                        backgroundColor: Colors.white,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                        ),
+                                        side:
+                                            const BorderSide(color: Colors.red),
                                       ),
-                                      side: const BorderSide(color: Colors.red),
-                                    ),
-                                    child: const Text(
-                                      "Yes",
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        color: Colors.red,
-                                        fontWeight: FontWeight.bold,
+                                      child: const Text(
+                                        "Yes",
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          color: Colors.red,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -331,7 +338,8 @@ class _ProfileState extends State<Profile> {
                       );
 
                       if (confirm == true) {
-                        await AuthMethods().SignOut();
+                        await AuthMethods().signOut();
+                        await SharedPreferenceHelper().clear();
                         Navigator.pushReplacementNamed(context, '/login');
                       }
                     },

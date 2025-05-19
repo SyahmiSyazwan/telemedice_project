@@ -24,28 +24,25 @@ class _SignupState extends State<Signup> {
 
   registration() async {
     if (password != null) {
-      print("object1");
       try {
-        print("object2");
         UserCredential userCredential = await FirebaseAuth.instance
             .createUserWithEmailAndPassword(email: email, password: password);
-        print("object4");
         ScaffoldMessenger.of(context).showSnackBar((SnackBar(
             backgroundColor: Colors.redAccent,
             content: Text(
               "Registered Successfully",
               style: TextStyle(fontSize: 20.0),
             ))));
-        // String Id = randomAlphaNumeric(10);
-        // Map<String, dynamic> addUserInfo = {
-        //   "Name": namecontroller.text,
-        //   "Email": mailcontroller.text,
-        //   "Id": Id,
-        // };
-        // await DatabaseMethods().addUserDetail(addUserInfo, Id);
-        // await SharedPreferenceHelper().saveUserName(namecontroller.text);
-        // await SharedPreferenceHelper().saveUserEmail(mailcontroller.text);
-        // await SharedPreferenceHelper().saveUserId(Id);
+        String Id = randomAlphaNumeric(10);
+        Map<String, dynamic> addUserInfo = {
+          "Name": namecontroller.text,
+          "Email": mailcontroller.text,
+          "Id": Id,
+        };
+        await DatabaseMethods().addUserDetail(addUserInfo, Id);
+        await SharedPreferenceHelper().saveUserName(namecontroller.text);
+        await SharedPreferenceHelper().saveUserEmail(mailcontroller.text);
+        await SharedPreferenceHelper().saveUserId(Id);
 
         // ignore: use_build_context_synchronously
         Navigator.pushReplacement(
@@ -130,7 +127,6 @@ class _SignupState extends State<Signup> {
                               SizedBox(height: 30),
                               Text(
                                 "Sign up",
-                                //style: AppWidget.HeadlineTextFieldStyle(),
                               ),
                               SizedBox(height: 30),
                               TextFormField(
@@ -180,7 +176,6 @@ class _SignupState extends State<Signup> {
                                       email = mailcontroller.text;
                                       name = namecontroller.text;
                                       password = passwordcontroller.text;
-                                      print("object");
                                     });
                                   }
                                   registration();
@@ -201,7 +196,6 @@ class _SignupState extends State<Signup> {
                                         style: TextStyle(
                                           color: Colors.white,
                                           fontSize: 18,
-                                          fontFamily: 'Poppins1',
                                           fontWeight: FontWeight.bold,
                                         ),
                                       ),
@@ -222,8 +216,6 @@ class _SignupState extends State<Signup> {
                       },
                       child: Text(
                         "Already have an account? Login",
-
-                        ///style: AppWidget.semiBoldTextFieldStyle(),
                       ),
                     ),
                   ],

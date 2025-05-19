@@ -1,0 +1,2 @@
+
+enum AppointmentType { inPerson, virtual }

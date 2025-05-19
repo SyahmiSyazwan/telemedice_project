@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:telemedice_project/pages/appointment_screen.dart';
+import 'package:telemedice_project/pages/appointment.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -82,7 +82,7 @@ class _HomeState extends State<Home> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => const AppointmentScreen()),
+                      builder: (context) => const Appointment()),
                 );
               },
             ),
