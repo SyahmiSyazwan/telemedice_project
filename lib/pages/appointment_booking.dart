@@ -57,8 +57,8 @@ class _AppointmentBookingState extends State<AppointmentBooking> {
     });
 
     String dateStr = DateFormat('yyyy-MM-dd').format(pickedDate);
-    List<String> booked =
-        await DatabaseMethods().getBookedTimeSlots(widget.doctorId, dateStr);
+    List<String> booked = await DatabaseMethods().getBookedTimeSlots(
+        widget.doctorId, dateStr, widget.location, widget.specialistLabel);
 
     setState(() {
       bookedSlots = booked;
@@ -215,11 +215,12 @@ class _AppointmentBookingState extends State<AppointmentBooking> {
                             DateFormat('yyyy-MM-dd').format(selectedDate!);
 
                         final success = await DatabaseMethods().bookAppointment(
-                          doctorId: widget.doctorId,
-                          patientId: userId,
-                          date: dateStr,
-                          timeSlot: selectedTimeSlot!,
-                        );
+                            doctorId: widget.doctorId,
+                            patientId: userId,
+                            date: dateStr,
+                            timeSlot: selectedTimeSlot!,
+                            location: widget.location,
+                            specialist: widget.specialistLabel);
 
                         setState(() => isLoading = false);
 

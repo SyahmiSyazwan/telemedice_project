@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:telemedice_project/models/doctor.dart';
 import 'package:telemedice_project/pages/appointment_booking.dart';
@@ -14,65 +15,33 @@ class DoctorSelection extends StatefulWidget {
 }
 
 class _DoctorSelectionState extends State<DoctorSelection> {
+  Future<List<Doctor>> _fetchDoctors() async {
+    final snapshot = await FirebaseFirestore.instance
+        .collection('doctors')
+        .where('specialistLabel', isEqualTo: widget.specialistLabel)
+        .where('location', isEqualTo: widget.location)
+        .get();
+
+    return snapshot.docs.map((doc) {
+      final data = doc.data();
+      return Doctor(
+        id: data['id'],
+        name: data['name'],
+        image: data['image'],
+        location: data['location'],
+        rating: (data['rating'] as num).toDouble(),
+        reviews: data['reviews'],
+        specialistLabel: data['specialistLabel'],
+      );
+    }).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
-    List<Doctor> doctors = [
-      Doctor(
-        id: 'doc1',
-        name: 'Dr. Chukwunomnso Iwegbu',
-        image: 'images/boy.jpeg',
-        location: widget.location,
-        rating: 4.5,
-        reviews: 1031,
-        specialistLabel: 'pediatrician',
-      ),
-      Doctor(
-        id: 'doc2',
-        name: 'Dr. Uchendu Ebuka',
-        image: 'images/boy.jpeg',
-        location: widget.location,
-        rating: 4.0,
-        reviews: 1031,
-        specialistLabel: 'cardiologist',
-      ),
-      Doctor(
-        id: 'doc3',
-        name: 'Dr. Chindinma Nwokoro',
-        image: 'images/boy.jpeg',
-        location: widget.location,
-        rating: 4.8,
-        reviews: 1031,
-        specialistLabel: 'neurologist',
-      ),
-      Doctor(
-        id: 'doc4',
-        name: 'Dr. Adekunle Philips',
-        image: 'images/boy.jpeg',
-        location: widget.location,
-        rating: 4.7,
-        reviews: 1031,
-        specialistLabel: 'dentist',
-      ),
-      Doctor(
-        id: 'doc5',
-        name: 'Dr. Ayobami Ayodele',
-        image: 'images/boy.jpeg',
-        location: widget.location,
-        rating: 4.9,
-        reviews: 1031,
-        specialistLabel: 'ophthalmologist',
-      ),
-    ];
-
-    // match doctor
-    List<Doctor> filteredDoctors = doctors
-        .where((doc) => doc.specialistLabel == widget.specialistLabel)
-        .toList();
-
     return Scaffold(
       appBar: AppBar(
         title: Text("${widget.specialistLabel} Doctors",
-            style: TextStyle(color: Colors.black)),
+            style: const TextStyle(color: Colors.black)),
         backgroundColor: Colors.white,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.black),
@@ -82,7 +51,7 @@ class _DoctorSelectionState extends State<DoctorSelection> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Search bar
+            // Search bar (not implemented for filtering yet)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 15),
               decoration: BoxDecoration(
@@ -100,14 +69,26 @@ class _DoctorSelectionState extends State<DoctorSelection> {
             const SizedBox(height: 20),
             Text(
               "Available doctors for ${widget.specialistLabel}",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
-
-            // Doctor List
-            ...filteredDoctors
-                .map((doc) => _buildDoctorCard(context, doc))
-                .toList(),
+            FutureBuilder<List<Doctor>>(
+              future: _fetchDoctors(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return const Center(child: Text("No doctors found."));
+                }
+                final doctors = snapshot.data!;
+                return Column(
+                  children: doctors
+                      .map((doc) => _buildDoctorCard(context, doc))
+                      .toList(),
+                );
+              },
+            ),
           ],
         ),
       ),
@@ -146,10 +127,10 @@ class _DoctorSelectionState extends State<DoctorSelection> {
                 ],
               ),
               const SizedBox(height: 2),
-              Text(
-                doctor.location,
-                style: const TextStyle(fontSize: 12),
-              ),
+              // Text(
+              //   doctor.location,
+              //   style: const TextStyle(fontSize: 12),
+              // ),
             ],
           ),
           trailing: const Icon(Icons.arrow_forward_ios, size: 16),
@@ -161,7 +142,6 @@ class _DoctorSelectionState extends State<DoctorSelection> {
                   doctorName: doctor.name,
                   doctorImage: doctor.image,
                   specialistLabel: doctor.specialistLabel,
-                  //hospitalName: doctor['hospital'],
                   doctorId: doctor.id,
                   location: widget.location,
                 ),

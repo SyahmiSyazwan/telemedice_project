@@ -1,5 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:telemedice_project/pages/appointment.dart';
+import 'package:telemedice_project/pages/booking_details.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -9,6 +12,57 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  Future<Map<String, dynamic>?> _getUpcomingAppointment() async {
+    final userId = _auth.currentUser?.uid;
+    if (userId == null) return null;
+
+    final now = DateTime.now();
+    final dateStr =
+        "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
+
+    final snapshot = await _firestore
+        .collection('appointments')
+        .where('patientId', isEqualTo: userId)
+        .where('status', isEqualTo: 'booked')
+        .where('date', isGreaterThanOrEqualTo: dateStr)
+        .orderBy('date')
+        .orderBy('timeSlot')
+        .limit(1)
+        .get();
+
+    if (snapshot.docs.isEmpty) return null;
+
+    final doc = snapshot.docs.first;
+    final data = doc.data();
+    final doctorId = data['doctorId'];
+
+    // 用 where 查询，而非直接 doc()
+    final doctorSnapshot = await _firestore
+        .collection('doctors')
+        .where('id', isEqualTo: doctorId)
+        .limit(1)
+        .get();
+
+    String doctorName = 'Unknown Doctor';
+    if (doctorSnapshot.docs.isNotEmpty) {
+      final doctorData = doctorSnapshot.docs.first.data();
+      doctorName = doctorData['name'] ?? 'Unknown Doctor';
+    }
+
+    return {
+      'bookingId': doc.id,
+      'doctorId': doctorId,
+      'doctorName': doctorName,
+      'timeSlot': data['timeSlot'],
+      'specialist': data['specialist'],
+      'location': data['location'],
+      'date': data['date'],
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -22,10 +76,8 @@ class _HomeState extends State<Home> {
           children: [
             Text("Hi, User!",
                 style: TextStyle(color: Colors.black, fontSize: 22)),
-            Text(
-              "What do you want to do today?",
-              style: TextStyle(color: Colors.black54, fontSize: 14),
-            )
+            Text("What do you want to do today?",
+                style: TextStyle(color: Colors.black54, fontSize: 14)),
           ],
         ),
         actions: [
@@ -47,21 +99,75 @@ class _HomeState extends State<Home> {
                     fontWeight: FontWeight.bold,
                     color: Colors.blue)),
             const SizedBox(height: 10),
-            Card(
-              shape: RoundedRectangleBorder(
-                  side: BorderSide(color: Colors.blue.shade100),
-                  borderRadius: BorderRadius.circular(10)),
-              elevation: 0,
-              child: ListTile(
-                leading: const Icon(Icons.calendar_today, color: Colors.green),
-                title: const Text(
-                    "You currently don't have an appointment scheduled."),
-                subtitle: const Text("Book an appointment today!"),
-                trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                onTap: () {},
-              ),
+
+            FutureBuilder<Map<String, dynamic>?>(
+              future: _getUpcomingAppointment(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (!snapshot.hasData || snapshot.data == null) {
+                  return Card(
+                    shape: RoundedRectangleBorder(
+                      side: BorderSide(color: Colors.blue.shade100),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    elevation: 0,
+                    child: ListTile(
+                      leading:
+                          const Icon(Icons.calendar_today, color: Colors.green),
+                      title: const Text(
+                          "You currently don't have an appointment scheduled."),
+                      subtitle: const Text("Book an appointment today!"),
+                      trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                      onTap: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => const Appointment()));
+                      },
+                    ),
+                  );
+                }
+
+                final appointment = snapshot.data!;
+                return Card(
+                  shape: RoundedRectangleBorder(
+                    side: BorderSide(color: Colors.blue.shade100),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  elevation: 0,
+                  child: ListTile(
+                    leading:
+                        const Icon(Icons.calendar_today, color: Colors.green),
+                    title: Text(
+                        "Appointment with ${appointment['doctorName']} on ${appointment['date']} at ${appointment['timeSlot']}"),
+                    subtitle: Text(
+                        "${appointment['specialist']} • ${appointment['location']}"),
+                    trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => BookingDetails(
+                            bookingId: appointment['bookingId'],
+                            doctorId: appointment['doctorId'],
+                            doctorName: appointment['doctorName'],
+                            timeSlot: appointment['timeSlot'],
+                            specialist: appointment['specialist'],
+                            location: appointment['location'],
+                            date: appointment['date'],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                );
+              },
             ),
+
             const SizedBox(height: 20),
+
             const Text("For General Needs",
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             const SizedBox(height: 5),
@@ -81,8 +187,7 @@ class _HomeState extends State<Home> {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                      builder: (context) => const Appointment()),
+                  MaterialPageRoute(builder: (context) => const Appointment()),
                 );
               },
             ),

@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:telemedice_project/pages/doctor_selection.dart';
 import 'package:telemedice_project/models/appointment_type.dart';
@@ -14,6 +15,48 @@ class SpecialistSelection extends StatefulWidget {
 }
 
 class _SpecialistSelectionState extends State<SpecialistSelection> {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  Future<int> _countDoctorsForSpecialistAndLocation(
+      String specialist, String location) async {
+    final snapshot = await FirebaseFirestore.instance
+        .collection('doctors')
+        .where('specialistLabel', isEqualTo: specialist)
+        .where('location', isEqualTo: location)
+        .get();
+
+    return snapshot.docs.length;
+  }
+
+  Widget _buildSpecialistItem({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required String specialistLabel,
+    required VoidCallback onTap,
+  }) {
+    return FutureBuilder<int>(
+      future: _countDoctorsForSpecialistAndLocation(
+          specialistLabel, widget.location),
+      builder: (context, snapshot) {
+        final count = snapshot.data ?? 0;
+        return ListTile(
+          contentPadding: EdgeInsets.zero,
+          leading: CircleAvatar(
+            backgroundColor: Colors.blue.shade100,
+            child: Icon(icon, color: Colors.blue),
+          ),
+          title:
+              Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+          subtitle: Text(
+              "$subtitle • $count available doctor${count == 1 ? '' : 's'}"),
+          trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+          onTap: onTap,
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -33,23 +76,6 @@ class _SpecialistSelectionState extends State<SpecialistSelection> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Search Bar
-            // Container(
-            //   padding: const EdgeInsets.symmetric(horizontal: 15),
-            //   decoration: BoxDecoration(
-            //     border: Border.all(color: Colors.teal.shade100),
-            //     borderRadius: BorderRadius.circular(10),
-            //   ),
-            //   child: const TextField(
-            //     decoration: InputDecoration(
-            //       hintText: 'Search',
-            //       border: InputBorder.none,
-            //       icon: Icon(Icons.search),
-            //     ),
-            //   ),
-            // ),
-            // const SizedBox(height: 20),
-
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: const [
@@ -57,20 +83,15 @@ class _SpecialistSelectionState extends State<SpecialistSelection> {
                   "Specialist",
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
-                Text(
-                  "See more",
-                  style: TextStyle(color: Colors.blue),
-                ),
               ],
             ),
             const SizedBox(height: 10),
 
             // can use firebase store the specialist and doctor, but need to admin prototype for insert the specialist and doctor first
             _buildSpecialistItem(
-              context,
               icon: Icons.child_care,
               title: "Pediatrician",
-              subtitle: "Child Specialist • 75 available doctors",
+              subtitle: "Child Specialist",
               specialistLabel: "pediatrician",
               onTap: () {
                 Navigator.push(
@@ -84,10 +105,9 @@ class _SpecialistSelectionState extends State<SpecialistSelection> {
               },
             ),
             _buildSpecialistItem(
-              context,
               icon: Icons.favorite,
               title: "Cardiologist",
-              subtitle: "Heart Specialist • 75 available doctors",
+              subtitle: "Heart Specialist",
               specialistLabel: "cardiologist",
               onTap: () {
                 Navigator.push(
@@ -101,10 +121,9 @@ class _SpecialistSelectionState extends State<SpecialistSelection> {
               },
             ),
             _buildSpecialistItem(
-              context,
               icon: Icons.psychology_outlined,
               title: "Neurologist",
-              subtitle: "Brain Specialist • 33 available doctors",
+              subtitle: "Brain Specialist",
               specialistLabel: "neurologist",
               onTap: () {
                 Navigator.push(
@@ -118,10 +137,9 @@ class _SpecialistSelectionState extends State<SpecialistSelection> {
               },
             ),
             _buildSpecialistItem(
-              context,
               icon: Icons.medical_information_outlined,
               title: "Dentist",
-              subtitle: "Dental Surgeon • 119 available doctors",
+              subtitle: "Dental Surgeon",
               specialistLabel: "dentist",
               onTap: () {
                 Navigator.push(
@@ -135,17 +153,16 @@ class _SpecialistSelectionState extends State<SpecialistSelection> {
               },
             ),
             _buildSpecialistItem(
-              context,
               icon: Icons.remove_red_eye_outlined,
               title: "Ophthalmologist",
-              subtitle: "Eye Specialist • 102 available doctors",
+              subtitle: "Eye Specialist",
               specialistLabel: "ophthalmologist",
               onTap: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
                       builder: (context) => DoctorSelection(
-                            specialistLabel: "dentist",
+                            specialistLabel: "ophthalmologist",
                             location: widget.location,
                           )),
                 );
@@ -154,27 +171,6 @@ class _SpecialistSelectionState extends State<SpecialistSelection> {
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildSpecialistItem(
-    BuildContext context, {
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required String specialistLabel,
-    required VoidCallback onTap,
-  }) {
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      leading: CircleAvatar(
-        backgroundColor: Colors.blue.shade100,
-        child: Icon(icon, color: Colors.blue),
-      ),
-      title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-      subtitle: Text(subtitle),
-      trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-      onTap: onTap,
     );
   }
 }

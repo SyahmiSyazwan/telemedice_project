@@ -10,11 +10,14 @@ class DatabaseMethods {
   }
 
   // Query the list of time periods that a doctor has been booked for on a certain day
-  Future<List<String>> getBookedTimeSlots(String doctorId, String date) async {
+  Future<List<String>> getBookedTimeSlots(
+      String doctorId, String date, String location, String specialist) async {
     final snapshot = await _firestore
         .collection('appointments')
         .where('doctorId', isEqualTo: doctorId)
         .where('date', isEqualTo: date)
+        .where('location', isEqualTo: location)
+        .where('specialist', isEqualTo: specialist)
         .where('status', isEqualTo: 'booked')
         .get();
 
@@ -28,6 +31,8 @@ class DatabaseMethods {
     required String patientId,
     required String date,
     required String timeSlot,
+    required String location,
+    required String specialist,
   }) async {
     final docRef = _firestore.collection('appointments').doc();
 
@@ -55,6 +60,8 @@ class DatabaseMethods {
           'date': date,
           'timeSlot': timeSlot,
           'status': 'booked',
+          'location': location,
+          'specialist': specialist,
           'createdAt': FieldValue.serverTimestamp(),
         });
       });
@@ -65,5 +72,48 @@ class DatabaseMethods {
       print('Appointment failed: $e');
       return false;
     }
+  }
+
+  /// 返回指定日期的预约流（包含status='booked'）
+  Stream<List<Map<String, dynamic>>> getBookingsStreamByDate(String date) {
+    return _firestore
+        .collection('appointments')
+        .where('date', isEqualTo: date)
+        .where('status', isEqualTo: 'booked')
+        .snapshots()
+        .asyncMap((snapshot) async {
+      final bookings = snapshot.docs;
+
+      final doctorIds = bookings.map((b) => b['doctorId'] as String).toSet();
+
+      final doctorsSnapshot = await _firestore
+          .collection('doctors')
+          .where('id', whereIn: doctorIds.toList())
+          .get();
+
+      final doctorMap = {
+        for (var doc in doctorsSnapshot.docs)
+          doc.data()['id']: doc.data()['name'] ?? 'Unknown Doctor'
+      };
+
+      return bookings.map((doc) {
+        final data = doc.data();
+        final docId = doc.id;
+        final doctorId = data['doctorId'] as String;
+        final doctorName = doctorMap[doctorId] ?? 'Unknown Doctor';
+        final bookingDate = data['date'] ?? 'No date';
+
+        return {
+          'bookingId': docId,
+          'doctorId': doctorId,
+          'patientId': data['patientId'],
+          'timeSlot': data['timeSlot'],
+          'specialist': data['specialist'],
+          'location': data['location'],
+          'doctorName': doctorName,
+          'date': bookingDate,
+        };
+      }).toList();
+    });
   }
 }
