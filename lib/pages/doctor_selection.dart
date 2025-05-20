@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:telemedice_project/models/doctor.dart';
 import 'package:telemedice_project/pages/appointment_booking.dart';
 
 class DoctorSelection extends StatefulWidget {
   final String specialistLabel;
+  final String location;
 
-  const DoctorSelection({super.key, required this.specialistLabel});
+  const DoctorSelection(
+      {super.key, required this.specialistLabel, required this.location});
 
   @override
   State<DoctorSelection> createState() => _DoctorSelectionState();
@@ -13,57 +16,57 @@ class DoctorSelection extends StatefulWidget {
 class _DoctorSelectionState extends State<DoctorSelection> {
   @override
   Widget build(BuildContext context) {
-    final List<Map<String, dynamic>> doctors = [
-      {
-        'id': 'doc1',
-        'name': 'Dr. Chukwunomnso Iwegbu',
-        'image': 'images/boy.jpeg',
-        'hospital': 'Columbia Asia Hospital Tebrau',
-        'rating': 4.5,
-        'reviews': 1031,
-        'specialistLabel': 'pediatrician',
-      },
-      {
-        'id': 'doc2',
-        'name': 'Dr. Uchendu Ebuka',
-        'image': 'images/boy.jpeg',
-        'hospital': 'Columbia Asia Hospital Tebrau',
-        'rating': 4.0,
-        'reviews': 1031,
-        'specialistLabel': 'cardiologist',
-      },
-      {
-        'id': 'doc3',
-        'name': 'Dr. Chindinma Nwokoro',
-        'image': 'images/boy.jpeg',
-        'hospital': 'Columbia Asia Hospital Tebrau',
-        'rating': 4.8,
-        'reviews': 1031,
-        'specialistLabel': 'neurologist',
-      },
-      {
-        'id': 'doc4',
-        'name': 'Dr. Adekunle Philips',
-        'image': 'images/boy.jpeg',
-        'hospital': 'Randle General Hospitals',
-        'rating': 4.7,
-        'reviews': 1031,
-        'specialistLabel': 'dentist',
-      },
-      {
-        'id': 'doc5',
-        'name': 'Dr. Ayobami Ayodele',
-        'image': 'images/boy.jpeg',
-        'hospital': 'Marigold Hospital',
-        'rating': 4.9,
-        'reviews': 1031,
-        'specialistLabel': 'ophthalmologist',
-      },
+    List<Doctor> doctors = [
+      Doctor(
+        id: 'doc1',
+        name: 'Dr. Chukwunomnso Iwegbu',
+        image: 'images/boy.jpeg',
+        location: widget.location,
+        rating: 4.5,
+        reviews: 1031,
+        specialistLabel: 'pediatrician',
+      ),
+      Doctor(
+        id: 'doc2',
+        name: 'Dr. Uchendu Ebuka',
+        image: 'images/boy.jpeg',
+        location: widget.location,
+        rating: 4.0,
+        reviews: 1031,
+        specialistLabel: 'cardiologist',
+      ),
+      Doctor(
+        id: 'doc3',
+        name: 'Dr. Chindinma Nwokoro',
+        image: 'images/boy.jpeg',
+        location: widget.location,
+        rating: 4.8,
+        reviews: 1031,
+        specialistLabel: 'neurologist',
+      ),
+      Doctor(
+        id: 'doc4',
+        name: 'Dr. Adekunle Philips',
+        image: 'images/boy.jpeg',
+        location: widget.location,
+        rating: 4.7,
+        reviews: 1031,
+        specialistLabel: 'dentist',
+      ),
+      Doctor(
+        id: 'doc5',
+        name: 'Dr. Ayobami Ayodele',
+        image: 'images/boy.jpeg',
+        location: widget.location,
+        rating: 4.9,
+        reviews: 1031,
+        specialistLabel: 'ophthalmologist',
+      ),
     ];
 
-    // match specialist doctor list
-    List<Map<String, dynamic>> filteredDoctors = doctors
-        .where((doc) => doc['specialistLabel'] == widget.specialistLabel)
+    // match doctor
+    List<Doctor> filteredDoctors = doctors
+        .where((doc) => doc.specialistLabel == widget.specialistLabel)
         .toList();
 
     return Scaffold(
@@ -111,17 +114,17 @@ class _DoctorSelectionState extends State<DoctorSelection> {
     );
   }
 
-  Widget _buildDoctorCard(BuildContext context, Map<String, dynamic> doctor) {
+  Widget _buildDoctorCard(BuildContext context, Doctor doctor) {
     return Column(
       children: [
         ListTile(
           contentPadding: EdgeInsets.zero,
           leading: CircleAvatar(
-            backgroundImage: AssetImage(doctor['image']),
+            backgroundImage: AssetImage(doctor.image),
             radius: 25,
           ),
           title: Text(
-            doctor['name'],
+            doctor.name,
             style: const TextStyle(fontWeight: FontWeight.bold),
           ),
           subtitle: Column(
@@ -132,19 +135,19 @@ class _DoctorSelectionState extends State<DoctorSelection> {
                   ...List.generate(
                     5,
                     (index) => Icon(
-                      index < doctor['rating'] ? Icons.star : Icons.star_border,
+                      index < doctor.rating ? Icons.star : Icons.star_border,
                       size: 16,
                       color: Colors.orange,
                     ),
                   ),
                   const SizedBox(width: 5),
-                  Text('${doctor['reviews']} Ratings',
+                  Text('${doctor.reviews} Ratings',
                       style: const TextStyle(fontSize: 12)),
                 ],
               ),
               const SizedBox(height: 2),
               Text(
-                doctor['hospital'],
+                doctor.location,
                 style: const TextStyle(fontSize: 12),
               ),
             ],
@@ -155,11 +158,12 @@ class _DoctorSelectionState extends State<DoctorSelection> {
               context,
               MaterialPageRoute(
                 builder: (context) => AppointmentBooking(
-                  doctorName: doctor['name'],
-                  doctorImage: doctor['image'],
-                  specialistLabel: doctor['specialistLabel'],
-                  hospitalName: doctor['hospital'],
-                  doctorId: doctor['id'],
+                  doctorName: doctor.name,
+                  doctorImage: doctor.image,
+                  specialistLabel: doctor.specialistLabel,
+                  //hospitalName: doctor['hospital'],
+                  doctorId: doctor.id,
+                  location: widget.location,
                 ),
               ),
             );

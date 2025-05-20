@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:telemedice_project/pages/clinic_picker.dart';
 import 'package:telemedice_project/pages/specialist_selection.dart';
 import 'package:telemedice_project/models/appointment_type.dart';
-
 
 class Appointment extends StatefulWidget {
   const Appointment({super.key});
@@ -12,6 +12,7 @@ class Appointment extends StatefulWidget {
 
 class _AppointmentState extends State<Appointment> {
   AppointmentType? _selectedType;
+  String currentLocation = "UTM, Skudai, Johor";
 
   @override
   Widget build(BuildContext context) {
@@ -43,13 +44,32 @@ class _AppointmentState extends State<Appointment> {
             ),
             const SizedBox(height: 15),
             Row(
-              children: const [
+              children: [
                 Icon(Icons.location_on, color: Colors.red),
                 SizedBox(width: 5),
-                Text("UTM, Skudai, Johor",
-                    style: TextStyle(fontWeight: FontWeight.bold)),
+                Expanded(
+                  child: Text(
+                    currentLocation,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
                 Spacer(),
-                Text("Change", style: TextStyle(color: Colors.blue)),
+                GestureDetector(
+                    onTap: () async {
+                      final newLocation = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const ClinicPicker()),
+                      );
+                      if (newLocation != null) {
+                        setState(() {
+                          currentLocation = newLocation;
+                        });
+                      }
+                    },
+                    child:
+                        Text("Change", style: TextStyle(color: Colors.blue))),
               ],
             ),
             const SizedBox(height: 30),
@@ -158,15 +178,19 @@ class _AppointmentState extends State<Appointment> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) =>
-                                     SpecialistSelection(appointmentType: _selectedType!,)),
+                                builder: (context) => SpecialistSelection(
+                                      appointmentType: _selectedType!,
+                                      location: currentLocation,
+                                    )),
                           );
                         } else {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) =>
-                                     SpecialistSelection(appointmentType: _selectedType!,)),
+                                builder: (context) => SpecialistSelection(
+                                      appointmentType: _selectedType!,
+                                      location: currentLocation,
+                                    )),
                           );
                         }
                       },

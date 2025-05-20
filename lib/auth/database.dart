@@ -3,13 +3,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class DatabaseMethods {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // 新增或更新用户信息
+  // Add or update user information
   Future<void> addUserDetail(
       Map<String, dynamic> userInfoMap, String id) async {
     return await _firestore.collection('users').doc(id).set(userInfoMap);
   }
 
-  // 查询某医生某天已经被预约的时间段列表
+  // Query the list of time periods that a doctor has been booked for on a certain day
   Future<List<String>> getBookedTimeSlots(String doctorId, String date) async {
     final snapshot = await _firestore
         .collection('appointments')
@@ -21,8 +21,8 @@ class DatabaseMethods {
     return snapshot.docs.map((doc) => doc['timeSlot'] as String).toList();
   }
 
-  /// 预约医生时间段
-  /// 返回是否成功（成功则该时间段无其他人预约）
+  /// Doctor appointment time
+  /// Returns whether it is successful (if successful, no one else has made a reservation for that time period)
   Future<bool> bookAppointment({
     required String doctorId,
     required String patientId,
@@ -32,9 +32,9 @@ class DatabaseMethods {
     final docRef = _firestore.collection('appointments').doc();
 
     try {
-      // 使用事务保证操作原子性，防止重复预约
+      // Use transactions to ensure atomicity of operations and prevent duplicate reservations
       await _firestore.runTransaction((transaction) async {
-        // 查询是否已有预约存在
+        // Check if there is an existing reservation
         final query = await _firestore
             .collection('appointments')
             .where('doctorId', isEqualTo: doctorId)
@@ -44,11 +44,11 @@ class DatabaseMethods {
             .get();
 
         if (query.docs.isNotEmpty) {
-          // 该时间段已被预约，抛异常终止事务
-          throw Exception('时间段已被预约');
+          // The time period has been reserved, and the transaction is terminated with an exception.
+          throw Exception('The time slot has been reserved');
         }
 
-        // 没有预约，写入新预约
+        // No appointment, write a new appointment
         transaction.set(docRef, {
           'doctorId': doctorId,
           'patientId': patientId,
@@ -61,8 +61,8 @@ class DatabaseMethods {
 
       return true;
     } catch (e) {
-      // 捕获异常（如重复预约）返回失败
-      print('预约失败: $e');
+      // Catch exceptions (such as duplicate reservations) and return failure
+      print('Appointment failed: $e');
       return false;
     }
   }

@@ -8,16 +8,18 @@ class AppointmentBooking extends StatefulWidget {
   final String doctorName;
   final String doctorImage;
   final String specialistLabel;
-  final String hospitalName;
+  // final String hospitalName;
   final String doctorId;
+  final String location;
 
   const AppointmentBooking({
     super.key,
     required this.doctorName,
     required this.doctorImage,
     required this.specialistLabel,
-    required this.hospitalName,
+    // required this.hospitalName,
     required this.doctorId,
+    required this.location,
   });
 
   @override
@@ -114,10 +116,9 @@ class _AppointmentBookingState extends State<AppointmentBooking> {
             const Text("LOCATION",
                 style: TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 10),
-            Text(widget.hospitalName,
+            Text(widget.location,
                 style: TextStyle(fontWeight: FontWeight.w600)),
-            const Text("23, Jalan Tebrau",
-                style: TextStyle(color: Colors.black54)),
+            // Text(widget.hospitalName, style: TextStyle(color: Colors.black54)),
 
             const SizedBox(height: 20),
             const Divider(),
@@ -231,7 +232,7 @@ class _AppointmentBookingState extends State<AppointmentBooking> {
                             Navigator.of(context).pushAndRemoveUntil(
                               MaterialPageRoute(
                                 builder: (context) =>
-                                    BottomNavBar(initialIndex: 2), 
+                                    BottomNavBar(initialIndex: 2),
                               ),
                               (route) => false,
                             );

@@ -4,8 +4,10 @@ import 'package:telemedice_project/models/appointment_type.dart';
 
 class SpecialistSelection extends StatefulWidget {
   final AppointmentType appointmentType;
+  final String location;
 
-  const SpecialistSelection({super.key, required this.appointmentType});
+  const SpecialistSelection(
+      {super.key, required this.appointmentType, required this.location});
 
   @override
   State<SpecialistSelection> createState() => _SpecialistSelectionState();
@@ -76,6 +78,7 @@ class _SpecialistSelectionState extends State<SpecialistSelection> {
                   MaterialPageRoute(
                       builder: (context) => DoctorSelection(
                             specialistLabel: "pediatrician",
+                            location: widget.location,
                           )),
                 );
               },
@@ -92,6 +95,7 @@ class _SpecialistSelectionState extends State<SpecialistSelection> {
                   MaterialPageRoute(
                       builder: (context) => DoctorSelection(
                             specialistLabel: "cardiologist",
+                            location: widget.location,
                           )),
                 );
               },
@@ -108,6 +112,7 @@ class _SpecialistSelectionState extends State<SpecialistSelection> {
                   MaterialPageRoute(
                       builder: (context) => DoctorSelection(
                             specialistLabel: "neurologist",
+                            location: widget.location,
                           )),
                 );
               },
@@ -124,6 +129,7 @@ class _SpecialistSelectionState extends State<SpecialistSelection> {
                   MaterialPageRoute(
                       builder: (context) => DoctorSelection(
                             specialistLabel: "dentist",
+                            location: widget.location,
                           )),
                 );
               },
@@ -140,6 +146,7 @@ class _SpecialistSelectionState extends State<SpecialistSelection> {
                   MaterialPageRoute(
                       builder: (context) => DoctorSelection(
                             specialistLabel: "dentist",
+                            location: widget.location,
                           )),
                 );
               },
