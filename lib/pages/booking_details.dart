@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:telemedice_project/pages/bottomNav.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class BookingDetails extends StatefulWidget {
   final String bookingId;
   final String doctorId;
   final String doctorName;
+  final String doctorImage;
   final String timeSlot;
   final String specialist;
   final String location;
@@ -16,6 +18,7 @@ class BookingDetails extends StatefulWidget {
     required this.bookingId,
     required this.doctorId,
     required this.doctorName,
+    required this.doctorImage,
     required this.timeSlot,
     required this.specialist,
     required this.location,
@@ -33,12 +36,91 @@ class _BookingDetailsState extends State<BookingDetails> {
 
   // cancel appointment
   Future<void> _cancelBooking() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text(
+          "Cancel Appointment",
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 25,
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: const Text(
+          "Are you sure you want to cancel this appointment?",
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 18),
+        ),
+        actionsPadding:
+            const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        actions: [
+          SizedBox(
+            width: double.infinity,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(context, false),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 12),
+                      backgroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      side: const BorderSide(color: Colors.black),
+                    ),
+                    child: const Text(
+                      "Cancel",
+                      style: TextStyle(
+                        fontSize: 18,
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(context, true),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 12),
+                      backgroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      side: const BorderSide(color: Colors.red),
+                    ),
+                    child: const Text(
+                      "Yes",
+                      style: TextStyle(
+                        fontSize: 18,
+                        color: Colors.red,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
     setState(() {
       _isCancelling = true;
     });
 
     try {
-      await _firestore
+      await FirebaseFirestore.instance
           .collection('appointments')
           .doc(widget.bookingId)
           .update({'status': 'cancelled'});
@@ -78,7 +160,7 @@ class _BookingDetailsState extends State<BookingDetails> {
         .where((slot) => slot != widget.timeSlot)
         .toSet();
 
-    final newTimeSlot = await showDialog<String>(
+    final selectedSlot = await showDialog<String>(
       context: context,
       builder: (context) {
         List<String> timeOptions = [
@@ -136,14 +218,89 @@ class _BookingDetailsState extends State<BookingDetails> {
       },
     );
 
-    if (newTimeSlot == null || newTimeSlot == widget.timeSlot) return;
+    if (selectedSlot == null || selectedSlot == widget.timeSlot) return;
 
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text(
+          "Confirm Reschedule",
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 25,
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: Text(
+          "Change appointment time to $selectedSlot?",
+          textAlign: TextAlign.center,
+          style: const TextStyle(fontSize: 18),
+        ),
+        actionsPadding:
+            const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        actions: [
+          SizedBox(
+            width: double.infinity,
+            child: Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(context, false),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 12),
+                      backgroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      side: const BorderSide(color: Colors.black),
+                    ),
+                    child: const Text(
+                      "Cancel",
+                      style: TextStyle(
+                          fontSize: 18,
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(context, true),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 12),
+                      backgroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      side: const BorderSide(color: Colors.blue),
+                    ),
+                    child: const Text(
+                      "Yes",
+                      style: TextStyle(
+                          fontSize: 18,
+                          color: Colors.blue,
+                          fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          )
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
     try {
       // Update appointment time
       await _firestore
           .collection('appointments')
           .doc(widget.bookingId)
-          .update({'timeSlot': newTimeSlot});
+          .update({'timeSlot': selectedSlot});
 
       if (!mounted) return;
 
@@ -165,13 +322,29 @@ class _BookingDetailsState extends State<BookingDetails> {
     }
   }
 
-  Widget _buildInfoTile(IconData icon, String title, String subtitle) {
+  Widget _buildInfoTile(IconData icon, String title, String subtitle,
+      {VoidCallback? onTap}) {
     return ListTile(
       leading: Icon(icon, color: Colors.blue.shade700, size: 32),
       title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
       subtitle: Text(subtitle, style: const TextStyle(fontSize: 16)),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 0),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+      onTap: onTap,
     );
+  }
+
+  void _openMap(String location) async {
+    final encodedLocation = Uri.encodeComponent(location);
+    final googleMapsUrl =
+        "https://www.google.com/maps/search/?api=1&query=$encodedLocation";
+
+    if (await canLaunchUrl(Uri.parse(googleMapsUrl))) {
+      await launchUrl(Uri.parse(googleMapsUrl));
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Could not open the map.")),
+      );
+    }
   }
 
   @override
@@ -190,21 +363,63 @@ class _BookingDetailsState extends State<BookingDetails> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildInfoTile(
-                Icons.medical_services, "Doctor Name", widget.doctorName),
-            const Divider(height: 30, thickness: 1),
-            _buildInfoTile(Icons.category, "Specialist", widget.specialist),
-            const Divider(height: 30, thickness: 1),
-            _buildInfoTile(Icons.location_on, "Location", widget.location),
-            const Divider(height: 30, thickness: 1),
-            _buildInfoTile(Icons.access_time, "Time", widget.timeSlot),
-            const Spacer(),
+            Center(
+              child: Column(
+                children: [
+                  CircleAvatar(
+                    radius: 50,
+                    backgroundImage: AssetImage(widget.doctorImage),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    widget.doctorName,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            Card(
+              margin: EdgeInsets.zero,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: BorderSide(color: Colors.grey.shade300),
+              ),
+              child: Column(
+                children: [
+                  _buildInfoTile(
+                      Icons.category, "Specialist", widget.specialist),
+                  Divider(
+                    height: 15,
+                    color: Colors.grey.shade300,
+                  ),
+                  _buildInfoTile(
+                    Icons.location_on,
+                    "Location",
+                    widget.location,
+                    onTap: () => _openMap(widget.location),
+                  ),
+                  Divider(
+                    height: 15,
+                    color: Colors.grey.shade300,
+                  ),
+                  _buildInfoTile(Icons.access_time, "Time", widget.timeSlot),
+                ],
+              ),
+            ),
+            const SizedBox(height: 40),
             Row(
               children: [
                 Expanded(
                   child: ElevatedButton(
                     onPressed: _isCancelling ? null : _cancelBooking,
                     style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: Colors.red,
                       side: BorderSide(color: Colors.red),
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
@@ -218,7 +433,7 @@ class _BookingDetailsState extends State<BookingDetails> {
                                 CircularProgressIndicator(color: Colors.black),
                           )
                         : const Text("Cancel Booking",
-                            style: TextStyle(fontSize: 16, color: Colors.red)),
+                            style: TextStyle(fontSize: 16)),
                   ),
                 ),
                 const SizedBox(width: 20),
@@ -226,13 +441,15 @@ class _BookingDetailsState extends State<BookingDetails> {
                   child: ElevatedButton(
                     onPressed: _reschedule,
                     style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: Colors.blue,
                       side: BorderSide(color: Colors.blue),
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12)),
                     ),
                     child: const Text("Reschedule",
-                        style: TextStyle(fontSize: 16, color: Colors.blue)),
+                        style: TextStyle(fontSize: 16)),
                   ),
                 ),
               ],

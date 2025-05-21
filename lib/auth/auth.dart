@@ -4,18 +4,18 @@ import 'package:telemedice_project/auth/shared.pref.dart';
 class AuthMethods {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  /// 获取当前用户
+  /// Get the current user
   User? getCurrentUser() {
     return _auth.currentUser;
   }
 
-  /// 登出并清除缓存
+  /// Log out and clear cache
   Future<void> signOut() async {
     await _auth.signOut();
-    await SharedPreferenceHelper().clear(); // 确保你定义了这个方法
+    await SharedPreferenceHelper().clear();
   }
 
-  /// 删除当前用户
+  /// Delete the current user
   Future<void> deleteUser() async {
     try {
       User? user = _auth.currentUser;

@@ -93,14 +93,19 @@ class DatabaseMethods {
 
       final doctorMap = {
         for (var doc in doctorsSnapshot.docs)
-          doc.data()['id']: doc.data()['name'] ?? 'Unknown Doctor'
+          doc.data()['id']: {
+            'name': doc.data()['name'] ?? 'Unknown Doctor',
+            'image': doc.data()['image'] ?? 'assets/images/boy.jpeg',
+          }
       };
 
       return bookings.map((doc) {
         final data = doc.data();
         final docId = doc.id;
         final doctorId = data['doctorId'] as String;
-        final doctorName = doctorMap[doctorId] ?? 'Unknown Doctor';
+        // final doctorName = doctorMap[doctorId] ?? 'Unknown Doctor';
+        // final doctorImage = doctorMap['image'] ?? 'assets/images/boy.jpeg';
+        final doctorInfo = doctorMap[doctorId] ?? {};
         final bookingDate = data['date'] ?? 'No date';
 
         return {
@@ -110,7 +115,8 @@ class DatabaseMethods {
           'timeSlot': data['timeSlot'],
           'specialist': data['specialist'],
           'location': data['location'],
-          'doctorName': doctorName,
+          'doctorName': doctorInfo['name'] ?? 'Unknown Doctor',
+          'doctorImage': doctorInfo['image'] ?? 'assets/images/boy.jpeg',
           'date': bookingDate,
         };
       }).toList();

@@ -47,15 +47,18 @@ class _HomeState extends State<Home> {
         .get();
 
     String doctorName = 'Unknown Doctor';
+    String doctorImage = 'assets/images/boy.jpeg';
     if (doctorSnapshot.docs.isNotEmpty) {
       final doctorData = doctorSnapshot.docs.first.data();
       doctorName = doctorData['name'] ?? 'Unknown Doctor';
+      doctorImage = doctorData['image'] ?? 'assets/images/boy.jpeg';
     }
 
     return {
       'bookingId': doc.id,
       'doctorId': doctorId,
       'doctorName': doctorName,
+      'doctorImage': doctorImage,
       'timeSlot': data['timeSlot'],
       'specialist': data['specialist'],
       'location': data['location'],
@@ -153,6 +156,7 @@ class _HomeState extends State<Home> {
                             bookingId: appointment['bookingId'],
                             doctorId: appointment['doctorId'],
                             doctorName: appointment['doctorName'],
+                            doctorImage: appointment['doctorImage'],
                             timeSlot: appointment['timeSlot'],
                             specialist: appointment['specialist'],
                             location: appointment['location'],

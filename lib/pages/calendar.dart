@@ -105,6 +105,7 @@ class _CalendarState extends State<Calendar> {
                                       bookingId: booking['bookingId'],
                                       doctorId: booking['doctorId'],
                                       doctorName: booking['doctorName'],
+                                      doctorImage: booking['doctorImage'],
                                       timeSlot: booking['timeSlot'],
                                       specialist: booking['specialist'],
                                       location: booking['location'],
