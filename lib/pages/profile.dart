@@ -71,7 +71,7 @@ class _ProfileState extends State<Profile> {
 
     profile = await SharedPreferenceHelper().getUserProfile();
 
-    name ??= user?.displayName ?? "User Name";
+    name ??= user?.displayName ?? "UserName";
     email ??= user?.email ?? "user@email.com";
 
     if ((await SharedPreferenceHelper().getUserName()) == null) {
@@ -121,10 +121,17 @@ class _ProfileState extends State<Profile> {
               ),
               ElevatedButton(
                 onPressed: onUpdate,
-                child: const Text("Update"),
                 style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.teal.shade100,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                   padding:
                       const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                ),
+                child: const Text(
+                  "Update",
+                  style: TextStyle(color: Colors.black),
                 ),
               ),
             ],
@@ -235,7 +242,7 @@ class _ProfileState extends State<Profile> {
                 Container(
                   width: double.infinity,
                   margin: const EdgeInsets.symmetric(
-                      horizontal: 20.0, vertical: 20.0),
+                      horizontal: 22.0, vertical: 20.0),
                   child: ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.red,
@@ -245,12 +252,12 @@ class _ProfileState extends State<Profile> {
                       ),
                     ),
                     icon: const Icon(Icons.exit_to_app,
-                        color: Colors.white, size: 25),
+                        color: Colors.black, size: 23),
                     label: const Text(
                       "Log Out",
                       style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 20.0,
+                        color: Colors.black,
+                        fontSize: 18.0,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -268,11 +275,12 @@ class _ProfileState extends State<Profile> {
                           ),
                           content: const Text(
                             textAlign: TextAlign.center,
-                            "Are you sure log out from this account?",
-                            style: TextStyle(fontSize: 18),
+                            "Are you sure want to log out from this account?",
+                            style: TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.w600),
                           ),
                           actionsPadding: const EdgeInsets.symmetric(
-                              horizontal: 24, vertical: 16),
+                              horizontal: 25, vertical: 18),
                           actions: [
                             SizedBox(
                               width: double.infinity,
@@ -287,24 +295,22 @@ class _ProfileState extends State<Profile> {
                                       style: ElevatedButton.styleFrom(
                                         padding: const EdgeInsets.symmetric(
                                             horizontal: 20, vertical: 12),
-                                        backgroundColor: Colors.white,
+                                        backgroundColor: Colors.teal.shade100,
                                         shape: RoundedRectangleBorder(
                                           borderRadius:
                                               BorderRadius.circular(8),
                                         ),
-                                        side: const BorderSide(
-                                            color: Colors.black),
                                       ),
                                       child: const Text(
                                         "Cancel",
                                         style: TextStyle(
                                           fontSize: 18,
                                           color: Colors.black,
-                                          fontWeight: FontWeight.bold,
                                         ),
                                       ),
                                     ),
                                   ),
+                                  const SizedBox(width: 20),
                                   Expanded(
                                     child: ElevatedButton(
                                       onPressed: () =>
@@ -312,20 +318,17 @@ class _ProfileState extends State<Profile> {
                                       style: ElevatedButton.styleFrom(
                                         padding: const EdgeInsets.symmetric(
                                             horizontal: 20, vertical: 12),
-                                        backgroundColor: Colors.white,
+                                        backgroundColor: Colors.red,
                                         shape: RoundedRectangleBorder(
                                           borderRadius:
                                               BorderRadius.circular(8),
                                         ),
-                                        side:
-                                            const BorderSide(color: Colors.red),
                                       ),
                                       child: const Text(
                                         "Yes",
                                         style: TextStyle(
                                           fontSize: 18,
-                                          color: Colors.red,
-                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black,
                                         ),
                                       ),
                                     ),
