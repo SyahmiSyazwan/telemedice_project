@@ -44,6 +44,10 @@ class _ProfileState extends State<Profile> {
       selectedImage = File(image.path);
       setState(() {});
       await uploadItem();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Profile picture updated!")),
+      );
     }
   }
 
@@ -52,33 +56,39 @@ class _ProfileState extends State<Profile> {
       String addId = randomAlphaNumeric(10);
       Reference firebaseStorageRef =
           FirebaseStorage.instance.ref().child("profileImages").child(addId);
-      final UploadTask task = firebaseStorageRef.putFile(selectedImage!);
-      var downloadUrl = await (await task).ref.getDownloadURL();
+      UploadTask task = firebaseStorageRef.putFile(selectedImage!);
+      TaskSnapshot snapshot = await task;
+
+      var downloadUrl = await snapshot.ref.getDownloadURL();
       await SharedPreferenceHelper().saveUserProfile(downloadUrl);
-      profile = downloadUrl;
-      setState(() {});
+
+      setState(() {
+        profile = downloadUrl;
+      });
     }
   }
 
   getSharedPrefs() async {
     final user = FirebaseAuth.instance.currentUser;
 
-    // Fallback if SharedPreferences is empty
-    if (user != null) {
-      name = await SharedPreferenceHelper().getUserName() ?? user.displayName;
-      email = await SharedPreferenceHelper().getUserEmail() ?? user.email;
-    }
-
+    // Try loading from SharedPreferences first
+    name = await SharedPreferenceHelper().getUserName();
+    email = await SharedPreferenceHelper().getUserEmail();
     profile = await SharedPreferenceHelper().getUserProfile();
 
-    name ??= user?.displayName ?? "UserName";
-    email ??= user?.email ?? "user@email.com";
+    // Fallback to Firebase if missing
+    if (user != null) {
+      await user.reload();
+      name ??= user.displayName ?? "UserName";
+      email ??= user.email ?? "user@email.com";
 
-    if ((await SharedPreferenceHelper().getUserName()) == null) {
-      await SharedPreferenceHelper().saveUserName(name!);
-    }
-    if ((await SharedPreferenceHelper().getUserEmail()) == null) {
-      await SharedPreferenceHelper().saveUserEmail(email!);
+      // Save fallback values if SharedPrefs are empty
+      if (await SharedPreferenceHelper().getUserName() == null) {
+        await SharedPreferenceHelper().saveUserName(name!);
+      }
+      if (await SharedPreferenceHelper().getUserEmail() == null) {
+        await SharedPreferenceHelper().saveUserEmail(email!);
+      }
     }
 
     nameController.text = name!;
@@ -88,55 +98,46 @@ class _ProfileState extends State<Profile> {
     });
   }
 
-  Widget profileInfoTile(IconData icon, String title,
-      TextEditingController controller, VoidCallback onUpdate) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20.0),
-      child: Material(
-        borderRadius: BorderRadius.circular(10),
-        elevation: 2.0,
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 10.0),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(10),
+  Widget profileInfoTile(
+    IconData icon,
+    String title,
+    TextEditingController controller,
+    VoidCallback? onSave, {
+    bool showUpdateButton = false,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      child: Row(
+        children: [
+          Icon(
+            icon,
+            size: 30.0,
+            color: Colors.teal,
           ),
-          child: Row(
-            children: [
-              Icon(icon, color: Colors.black),
-              const SizedBox(width: 20.0),
-              Expanded(
-                child: TextField(
-                  controller: controller,
-                  decoration: InputDecoration(
-                    labelText: title,
-                    border: InputBorder.none,
-                  ),
-                  style: const TextStyle(
-                    fontSize: 16.0,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black,
-                  ),
-                ),
+          const SizedBox(width: 16.0),
+          Expanded(
+            child: TextField(
+              controller: controller,
+              style: const TextStyle(
+                fontSize: 18.0,
+                fontWeight: FontWeight.w500,
               ),
-              ElevatedButton(
-                onPressed: onUpdate,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.teal.shade100,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-                ),
-                child: const Text(
-                  "Update",
-                  style: TextStyle(color: Colors.black),
-                ),
+              decoration: InputDecoration(
+                labelText: title,
+                labelStyle: const TextStyle(fontSize: 18.0),
+                border: const OutlineInputBorder(),
+                suffixIcon: showUpdateButton
+                    ? IconButton(
+                        icon:
+                            const Icon(Icons.check_circle, color: Colors.teal),
+                        onPressed: onSave,
+                        tooltip: 'Update',
+                      )
+                    : null,
               ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -182,35 +183,59 @@ class _ProfileState extends State<Profile> {
                                 ),
                                 const SizedBox(height: 10),
                                 Center(
-                                  child: Material(
-                                    elevation: 10.0,
-                                    borderRadius: BorderRadius.circular(80),
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(80),
-                                      child: GestureDetector(
-                                        onTap: getImage,
-                                        child: selectedImage != null
-                                            ? Image.file(
-                                                selectedImage!,
-                                                height: 160,
-                                                width: 160,
-                                                fit: BoxFit.cover,
-                                              )
-                                            : profile != null
-                                                ? Image.network(
-                                                    profile!,
-                                                    height: 160,
-                                                    width: 160,
-                                                    fit: BoxFit.cover,
-                                                  )
-                                                : Image.asset(
-                                                    "images/boy.jpeg",
-                                                    height: 160,
-                                                    width: 160,
-                                                    fit: BoxFit.cover,
-                                                  ),
+                                  child: Stack(
+                                    alignment: Alignment.bottomRight,
+                                    children: [
+                                      Material(
+                                        elevation: 10.0,
+                                        borderRadius: BorderRadius.circular(80),
+                                        child: ClipRRect(
+                                          borderRadius:
+                                              BorderRadius.circular(80),
+                                          child: selectedImage != null
+                                              ? Image.file(
+                                                  selectedImage!,
+                                                  height: 160,
+                                                  width: 160,
+                                                  fit: BoxFit.cover,
+                                                )
+                                              : profile != null
+                                                  ? Image.network(
+                                                      profile!,
+                                                      height: 160,
+                                                      width: 160,
+                                                      fit: BoxFit.cover,
+                                                    )
+                                                  : Image.asset(
+                                                      "images/boy.jpeg",
+                                                      height: 160,
+                                                      width: 160,
+                                                      fit: BoxFit.cover,
+                                                    ),
+                                        ),
                                       ),
-                                    ),
+                                      Positioned(
+                                        bottom: 0,
+                                        right: 4,
+                                        child: GestureDetector(
+                                          onTap: getImage,
+                                          child: Container(
+                                            padding: const EdgeInsets.all(8),
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              color: Colors.white,
+                                              border: Border.all(
+                                                  color: Colors.grey.shade300),
+                                            ),
+                                            child: const Icon(
+                                              Icons.camera_alt,
+                                              size: 22,
+                                              color: Colors.teal,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ],
@@ -218,23 +243,26 @@ class _ProfileState extends State<Profile> {
                           ],
                         ),
                         const SizedBox(height: 20.0),
-                        profileInfoTile(Icons.person, "Name", nameController,
-                            () async {
-                          await SharedPreferenceHelper()
-                              .saveUserName(nameController.text);
-                          setState(() {
-                            name = nameController.text;
-                          });
-                        }),
-                        const SizedBox(height: 30.0),
-                        profileInfoTile(Icons.email, "Email", emailController,
-                            () async {
-                          await SharedPreferenceHelper()
-                              .saveUserEmail(emailController.text);
-                          setState(() {
-                            email = emailController.text;
-                          });
-                        }),
+                        profileInfoTile(
+                          Icons.person,
+                          "Name",
+                          nameController,
+                          () async {
+                            await SharedPreferenceHelper()
+                                .saveUserName(nameController.text);
+                            setState(() {
+                              name = nameController.text;
+                            });
+                          },
+                          showUpdateButton: true,
+                        ),
+                        const SizedBox(height: 20.0),
+                        profileInfoTile(
+                          Icons.email,
+                          "Email",
+                          emailController,
+                          null,
+                        ),
                       ],
                     ),
                   ),
