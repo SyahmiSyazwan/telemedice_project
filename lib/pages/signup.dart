@@ -2,7 +2,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:telemedice_project/auth/database.dart';
 import 'package:telemedice_project/auth/shared.pref.dart';
-import 'package:telemedice_project/pages/basic_info_screen.dart';
 import 'package:random_string/random_string.dart';
 import 'package:telemedice_project/pages/bottomNav.dart';
 import 'package:telemedice_project/pages/login.dart';
@@ -33,16 +32,16 @@ class _SignupState extends State<Signup> {
               "Registered Successfully",
               style: TextStyle(fontSize: 20.0),
             ))));
-        String Id = randomAlphaNumeric(10);
+        String uid = FirebaseAuth.instance.currentUser!.uid;
         Map<String, dynamic> addUserInfo = {
           "Name": namecontroller.text,
           "Email": mailcontroller.text,
-          "Id": Id,
+          "Id": uid,
         };
-        await DatabaseMethods().addUserDetail(addUserInfo, Id);
+        await DatabaseMethods().addUserDetail(addUserInfo, uid);
         await SharedPreferenceHelper().saveUserName(namecontroller.text);
         await SharedPreferenceHelper().saveUserEmail(mailcontroller.text);
-        await SharedPreferenceHelper().saveUserId(Id);
+        await SharedPreferenceHelper().saveUserId(uid);
 
         // ignore: use_build_context_synchronously
         Navigator.pushReplacement(

@@ -6,7 +6,9 @@ class DatabaseMethods {
   // Add or update user information
   Future<void> addUserDetail(
       Map<String, dynamic> userInfoMap, String id) async {
-    return await _firestore.collection('users').doc(id).set(userInfoMap);
+    return await FirebaseFirestore.instance.collection("users").doc(id).set(
+        userInfoMap,
+        SetOptions(merge: true)); // use SetOptions() to update existing fields
   }
 
   // Query the list of time periods that a doctor has been booked for on a certain day

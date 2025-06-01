@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:random_string/random_string.dart';
 import 'package:telemedice_project/auth/auth.dart';
+import 'package:telemedice_project/auth/database.dart';
 import 'package:telemedice_project/auth/shared.pref.dart';
 
 class Profile extends StatefulWidget {
@@ -28,7 +29,7 @@ class _ProfileState extends State<Profile> {
     super.initState();
     nameController = TextEditingController();
     emailController = TextEditingController();
-    getSharedPrefs();
+    _loadUserData();
   }
 
   @override
@@ -38,51 +39,18 @@ class _ProfileState extends State<Profile> {
     super.dispose();
   }
 
-  Future getImage() async {
-    var image = await _picker.pickImage(source: ImageSource.gallery);
-    if (image != null) {
-      selectedImage = File(image.path);
-      setState(() {});
-      await uploadItem();
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Profile picture updated!")),
-      );
-    }
-  }
-
-  uploadItem() async {
-    if (selectedImage != null) {
-      String addId = randomAlphaNumeric(10);
-      Reference firebaseStorageRef =
-          FirebaseStorage.instance.ref().child("profileImages").child(addId);
-      UploadTask task = firebaseStorageRef.putFile(selectedImage!);
-      TaskSnapshot snapshot = await task;
-
-      var downloadUrl = await snapshot.ref.getDownloadURL();
-      await SharedPreferenceHelper().saveUserProfile(downloadUrl);
-
-      setState(() {
-        profile = downloadUrl;
-      });
-    }
-  }
-
-  getSharedPrefs() async {
+  Future<void> _loadUserData() async {
     final user = FirebaseAuth.instance.currentUser;
 
-    // Try loading from SharedPreferences first
     name = await SharedPreferenceHelper().getUserName();
     email = await SharedPreferenceHelper().getUserEmail();
     profile = await SharedPreferenceHelper().getUserProfile();
 
-    // Fallback to Firebase if missing
     if (user != null) {
       await user.reload();
-      name ??= user.displayName ?? "UserName";
+      name ??= user.displayName ?? "User Name";
       email ??= user.email ?? "user@email.com";
 
-      // Save fallback values if SharedPrefs are empty
       if (await SharedPreferenceHelper().getUserName() == null) {
         await SharedPreferenceHelper().saveUserName(name!);
       }
@@ -93,53 +61,151 @@ class _ProfileState extends State<Profile> {
 
     nameController.text = name!;
     emailController.text = email!;
-    setState(() {
-      _isLoading = false;
-    });
+    setState(() => _isLoading = false);
   }
 
-  Widget profileInfoTile(
-    IconData icon,
-    String title,
-    TextEditingController controller,
-    VoidCallback? onSave, {
+  Future<void> _getImage() async {
+    final pickedImage = await _picker.pickImage(source: ImageSource.gallery);
+    if (pickedImage != null) {
+      selectedImage = File(pickedImage.path);
+      setState(() {});
+      await _uploadProfileImage();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Profile picture updated!")),
+      );
+    }
+  }
+
+  Future<void> _uploadProfileImage() async {
+    if (selectedImage == null) return;
+
+    final String fileId = randomAlphaNumeric(10);
+    final ref =
+        FirebaseStorage.instance.ref().child("profileImages").child(fileId);
+
+    final task = ref.putFile(selectedImage!);
+    final snapshot = await task;
+
+    final downloadUrl = await snapshot.ref.getDownloadURL();
+    await SharedPreferenceHelper().saveUserProfile(downloadUrl);
+
+    setState(() => profile = downloadUrl);
+  }
+
+  Future<void> _updateUserName() async {
+    final newName = nameController.text.trim();
+    if (newName.isEmpty) return;
+
+    await SharedPreferenceHelper().saveUserName(newName);
+
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      await user.updateDisplayName(newName);
+      await user.reload();
+
+      await DatabaseMethods().addUserDetail({'Name': newName}, user.uid);
+    }
+
+    setState(() => name = newName);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Username updated successfully!")),
+    );
+  }
+
+  Widget _profileInfoTile({
+    required IconData icon,
+    required String title,
+    required TextEditingController controller,
+    VoidCallback? onSave,
     bool showUpdateButton = false,
   }) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       child: Row(
         children: [
-          Icon(
-            icon,
-            size: 30.0,
-            color: Colors.teal,
-          ),
+          Icon(icon, size: 30.0, color: Colors.teal),
           const SizedBox(width: 16.0),
           Expanded(
             child: TextField(
               controller: controller,
-              style: const TextStyle(
-                fontSize: 18.0,
-                fontWeight: FontWeight.w500,
-              ),
               decoration: InputDecoration(
                 labelText: title,
-                labelStyle: const TextStyle(fontSize: 18.0),
                 border: const OutlineInputBorder(),
                 suffixIcon: showUpdateButton
                     ? IconButton(
-                        icon:
-                            const Icon(Icons.check_circle, color: Colors.teal),
+                        icon: const Icon(Icons.upload, color: Colors.teal),
                         onPressed: onSave,
-                        tooltip: 'Update',
                       )
                     : null,
               ),
+              style:
+                  const TextStyle(fontSize: 18.0, fontWeight: FontWeight.w500),
             ),
           ),
         ],
       ),
     );
+  }
+
+  Future<void> _confirmLogout() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("LOGOUT",
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
+        content: const Text(
+          "Are you sure want to log out from this account?",
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w400),
+        ),
+        actionsPadding:
+            const EdgeInsets.symmetric(horizontal: 25, vertical: 15),
+        actions: [
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.teal.shade100,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  child: const Text("Cancel",
+                      style: TextStyle(color: Colors.black, fontSize: 20)),
+                ),
+              ),
+              const SizedBox(width: 20),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  child: const Text("Yes",
+                      style: TextStyle(color: Colors.black, fontSize: 20)),
+                ),
+              ),
+            ],
+          )
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      await AuthMethods().signOut();
+      await SharedPreferenceHelper().clear();
+      if (context.mounted) {
+        Navigator.pushReplacementNamed(context, '/login');
+      }
+    }
   }
 
   @override
@@ -156,10 +222,8 @@ class _ProfileState extends State<Profile> {
                         Stack(
                           children: [
                             Container(
-                              padding: const EdgeInsets.only(
-                                  top: 45.0, left: 20.0, right: 20.0),
                               height: MediaQuery.of(context).size.height / 3.8,
-                              width: MediaQuery.of(context).size.width,
+                              width: double.infinity,
                               decoration: BoxDecoration(
                                 color: Colors.teal.shade100,
                                 borderRadius: BorderRadius.vertical(
@@ -175,10 +239,9 @@ class _ProfileState extends State<Profile> {
                                   child: Text(
                                     name ?? "User Name",
                                     style: const TextStyle(
-                                      fontSize: 24,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black87,
-                                    ),
+                                        fontSize: 24,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black87),
                                   ),
                                 ),
                                 const SizedBox(height: 10),
@@ -218,7 +281,7 @@ class _ProfileState extends State<Profile> {
                                         bottom: 0,
                                         right: 4,
                                         child: GestureDetector(
-                                          onTap: getImage,
+                                          onTap: _getImage,
                                           child: Container(
                                             padding: const EdgeInsets.all(8),
                                             decoration: BoxDecoration(
@@ -242,26 +305,19 @@ class _ProfileState extends State<Profile> {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 20.0),
-                        profileInfoTile(
-                          Icons.person,
-                          "Name",
-                          nameController,
-                          () async {
-                            await SharedPreferenceHelper()
-                                .saveUserName(nameController.text);
-                            setState(() {
-                              name = nameController.text;
-                            });
-                          },
+                        const SizedBox(height: 20),
+                        _profileInfoTile(
+                          icon: Icons.person,
+                          title: "Name",
+                          controller: nameController,
+                          onSave: _updateUserName,
                           showUpdateButton: true,
                         ),
-                        const SizedBox(height: 20.0),
-                        profileInfoTile(
-                          Icons.email,
-                          "Email",
-                          emailController,
-                          null,
+                        const SizedBox(height: 20),
+                        _profileInfoTile(
+                          icon: Icons.email,
+                          title: "Email",
+                          controller: emailController,
                         ),
                       ],
                     ),
@@ -280,100 +336,15 @@ class _ProfileState extends State<Profile> {
                       ),
                     ),
                     icon: const Icon(Icons.exit_to_app,
-                        color: Colors.black, size: 23),
+                        color: Colors.black, size: 25),
                     label: const Text(
                       "Log Out",
                       style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 18.0,
-                        fontWeight: FontWeight.bold,
-                      ),
+                          color: Colors.black,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold),
                     ),
-                    onPressed: () async {
-                      bool? confirm = await showDialog<bool>(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          title: const Text(
-                            "LOGOUT",
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                                fontSize: 25,
-                                color: Colors.black,
-                                fontWeight: FontWeight.bold),
-                          ),
-                          content: const Text(
-                            textAlign: TextAlign.center,
-                            "Are you sure want to log out from this account?",
-                            style: TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.w600),
-                          ),
-                          actionsPadding: const EdgeInsets.symmetric(
-                              horizontal: 25, vertical: 18),
-                          actions: [
-                            SizedBox(
-                              width: double.infinity,
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Expanded(
-                                    child: ElevatedButton(
-                                      onPressed: () =>
-                                          Navigator.pop(context, false),
-                                      style: ElevatedButton.styleFrom(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 20, vertical: 12),
-                                        backgroundColor: Colors.teal.shade100,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(8),
-                                        ),
-                                      ),
-                                      child: const Text(
-                                        "Cancel",
-                                        style: TextStyle(
-                                          fontSize: 18,
-                                          color: Colors.black,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 20),
-                                  Expanded(
-                                    child: ElevatedButton(
-                                      onPressed: () =>
-                                          Navigator.pop(context, true),
-                                      style: ElevatedButton.styleFrom(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 20, vertical: 12),
-                                        backgroundColor: Colors.red,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(8),
-                                        ),
-                                      ),
-                                      child: const Text(
-                                        "Yes",
-                                        style: TextStyle(
-                                          fontSize: 18,
-                                          color: Colors.black,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            )
-                          ],
-                        ),
-                      );
-
-                      if (confirm == true) {
-                        await AuthMethods().signOut();
-                        await SharedPreferenceHelper().clear();
-                        Navigator.pushReplacementNamed(context, '/login');
-                      }
-                    },
+                    onPressed: _confirmLogout,
                   ),
                 ),
               ],
