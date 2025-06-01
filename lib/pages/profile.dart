@@ -1,9 +1,7 @@
 import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:random_string/random_string.dart';
 import 'package:telemedice_project/auth/auth.dart';
 import 'package:telemedice_project/auth/database.dart';
 import 'package:telemedice_project/auth/shared.pref.dart';
@@ -16,7 +14,7 @@ class Profile extends StatefulWidget {
 }
 
 class _ProfileState extends State<Profile> {
-  String? profile, name, email;
+  String? name, email;
   final ImagePicker _picker = ImagePicker();
   File? selectedImage;
   bool _isLoading = true;
@@ -44,7 +42,6 @@ class _ProfileState extends State<Profile> {
 
     name = await SharedPreferenceHelper().getUserName();
     email = await SharedPreferenceHelper().getUserEmail();
-    profile = await SharedPreferenceHelper().getUserProfile();
 
     if (user != null) {
       await user.reload();
@@ -64,33 +61,17 @@ class _ProfileState extends State<Profile> {
     setState(() => _isLoading = false);
   }
 
-  Future<void> _getImage() async {
-    final pickedImage = await _picker.pickImage(source: ImageSource.gallery);
+  Future<void> _getImage(ImageSource source) async {
+    final pickedImage = await _picker.pickImage(source: source);
     if (pickedImage != null) {
-      selectedImage = File(pickedImage.path);
-      setState(() {});
-      await _uploadProfileImage();
-      if (!mounted) return;
+      setState(() {
+        selectedImage = File(pickedImage.path);
+      });
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Profile picture updated!")),
       );
     }
-  }
-
-  Future<void> _uploadProfileImage() async {
-    if (selectedImage == null) return;
-
-    final String fileId = randomAlphaNumeric(10);
-    final ref =
-        FirebaseStorage.instance.ref().child("profileImages").child(fileId);
-
-    final task = ref.putFile(selectedImage!);
-    final snapshot = await task;
-
-    final downloadUrl = await snapshot.ref.getDownloadURL();
-    await SharedPreferenceHelper().saveUserProfile(downloadUrl);
-
-    setState(() => profile = downloadUrl);
   }
 
   Future<void> _updateUserName() async {
@@ -208,6 +189,45 @@ class _ProfileState extends State<Profile> {
     }
   }
 
+  void _showImageSourceDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('SELECT IMAGE SOURCE',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(
+                Icons.camera_alt,
+                color: Colors.black,
+              ),
+              title: const Text('Take a photo',
+                  style: TextStyle(fontSize: 18, color: Colors.black)),
+              onTap: () {
+                Navigator.pop(context);
+                _getImage(ImageSource.camera);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library, color: Colors.black),
+              title: const Text(
+                'Choose from gallery',
+                style: TextStyle(fontSize: 18, color: Colors.black),
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                _getImage(ImageSource.gallery);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -262,26 +282,19 @@ class _ProfileState extends State<Profile> {
                                                   width: 160,
                                                   fit: BoxFit.cover,
                                                 )
-                                              : profile != null
-                                                  ? Image.network(
-                                                      profile!,
-                                                      height: 160,
-                                                      width: 160,
-                                                      fit: BoxFit.cover,
-                                                    )
-                                                  : Image.asset(
-                                                      "images/boy.jpeg",
-                                                      height: 160,
-                                                      width: 160,
-                                                      fit: BoxFit.cover,
-                                                    ),
+                                              : Image.asset(
+                                                  "images/boy.jpeg",
+                                                  height: 160,
+                                                  width: 160,
+                                                  fit: BoxFit.cover,
+                                                ),
                                         ),
                                       ),
                                       Positioned(
                                         bottom: 0,
                                         right: 4,
                                         child: GestureDetector(
-                                          onTap: _getImage,
+                                          onTap: _showImageSourceDialog,
                                           child: Container(
                                             padding: const EdgeInsets.all(8),
                                             decoration: BoxDecoration(
