@@ -34,8 +34,8 @@ class DatabaseMethods {
     return snapshot.docs.map((doc) => doc['timeSlot'] as String).toList();
   }
 
-  /// Doctor appointment time
-  /// Returns whether it is successful (if successful, no one else has made a reservation for that time period)
+  // Doctor appointment time
+  // Returns whether it is successful (if successful, no one else has made a reservation for that time period)
   Future<bool> bookAppointment({
     required String doctorId,
     required String patientId,
@@ -84,7 +84,7 @@ class DatabaseMethods {
     }
   }
 
-  /// 返回指定日期的预约流（包含status='booked'）
+  // 返回指定日期的预约流（包含status='booked'）
   Stream<List<Map<String, dynamic>>> getBookingsStreamByDate(String date) {
     return _firestore
         .collection('appointments')

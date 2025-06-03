@@ -10,6 +10,7 @@ dependencies:
   flutter:
     sdk: flutter
 
+  jitsi_meet_wrapper: ^0.2.0+1
   cupertino_icons: ^1.0.8
   curved_navigation_bar: ^1.0.3
   firebase_core: ^3.13.0
@@ -25,7 +26,6 @@ dependencies:
   google_maps_webservice: ^0.0.20-nullsafety
   table_calendar: ^3.0.9
   url_launcher: ^6.2.5
-  jitsi_meet: ^4.0.0
 
 dev_dependencies:
   flutter_test:

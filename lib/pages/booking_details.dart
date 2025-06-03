@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:telemedice_project/pages/bottomNav.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:jitsi_meet/jitsi_meet.dart';
+import 'package:jitsi_meet_wrapper/jitsi_meet_wrapper.dart';
 
 class BookingDetails extends StatefulWidget {
   final String bookingId;
@@ -325,13 +325,17 @@ class _BookingDetailsState extends State<BookingDetails> {
 
   void _joinMeeting() async {
     try {
-      var options = JitsiMeetingOptions(room: widget.bookingId)
-        ..userDisplayName = "Patient"
-        ..subject = "Telemedicine Appointment with Dr. ${widget.doctorName}"
-        ..audioMuted = false
-        ..videoMuted = false;
-
-      await JitsiMeet.joinMeeting(options);
+      await JitsiMeetWrapper.joinMeeting(
+        options: JitsiMeetingOptions(
+          roomNameOrUrl: widget.bookingId,
+          subject: "Telemedicine Appointment with Dr. ${widget.doctorName}",
+          userDisplayName: "Patient",
+          configOverrides: {
+            "startWithAudioMuted": false,
+            "startWithVideoMuted": false,
+          },
+        ),
+      );
     } catch (e) {
       print("Error joining meeting: $e");
       ScaffoldMessenger.of(context).showSnackBar(
