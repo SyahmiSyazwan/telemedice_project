@@ -1,6 +1,6 @@
 name: telemedice_project
 description: "A new Flutter project."
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+publish_to: "none" # Remove this line if you wish to publish to pub.dev
 version: 1.0.0+1
 
 environment:
@@ -25,6 +25,7 @@ dependencies:
   google_maps_webservice: ^0.0.20-nullsafety
   table_calendar: ^3.0.9
   url_launcher: ^6.2.5
+  jitsi_meet: ^4.0.0
 
 dev_dependencies:
   flutter_test:
@@ -35,4 +36,4 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-   - images/
+    - images/

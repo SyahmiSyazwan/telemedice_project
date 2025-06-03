@@ -2,7 +2,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:telemedice_project/auth/database.dart';
 import 'package:telemedice_project/auth/shared.pref.dart';
-import 'package:random_string/random_string.dart';
 import 'package:telemedice_project/pages/bottomNav.dart';
 import 'package:telemedice_project/pages/login.dart';
 

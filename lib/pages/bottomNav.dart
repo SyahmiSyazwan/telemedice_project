@@ -1,6 +1,5 @@
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
-import 'package:telemedice_project/pages/appointment.dart';
 import 'package:telemedice_project/pages/calendar.dart';
 import 'package:telemedice_project/pages/home.dart';
 import 'package:telemedice_project/pages/message.dart';

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:telemedice_project/pages/bottomNav.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:jitsi_meet/jitsi_meet.dart';
 
 class BookingDetails extends StatefulWidget {
   final String bookingId;
@@ -34,7 +35,7 @@ class _BookingDetailsState extends State<BookingDetails> {
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // cancel appointment
+  // Cancel appointment
   Future<void> _cancelBooking() async {
     final confirm = await showDialog<bool>(
       context: context,
@@ -146,7 +147,7 @@ class _BookingDetailsState extends State<BookingDetails> {
 
   // Rescheduling with time conflict detection
   Future<void> _reschedule() async {
-    // get the reserved time slots from Firestore
+    // Get the reserved time slots from Firestore
     final bookedSlotsQuery = await _firestore
         .collection('appointments')
         .where('doctorId', isEqualTo: widget.doctorId)
@@ -322,12 +323,32 @@ class _BookingDetailsState extends State<BookingDetails> {
     }
   }
 
+  void _joinMeeting() async {
+    try {
+      var options = JitsiMeetingOptions(room: widget.bookingId)
+        ..userDisplayName = "Patient"
+        ..subject = "Telemedicine Appointment with Dr. ${widget.doctorName}"
+        ..audioMuted = false
+        ..videoMuted = false;
+
+      await JitsiMeet.joinMeeting(options);
+    } catch (e) {
+      print("Error joining meeting: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Failed to join meeting: $e")),
+      );
+    }
+  }
+
   Widget _buildInfoTile(IconData icon, String title, String subtitle,
       {VoidCallback? onTap}) {
     return ListTile(
-      leading: Icon(icon, color: Colors.blue.shade700, size: 32),
-      title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-      subtitle: Text(subtitle, style: const TextStyle(fontSize: 16)),
+      leading: Icon(icon, color: Colors.teal.shade300, size: 32),
+      title: Text(title,
+          style: const TextStyle(
+              fontWeight: FontWeight.bold, fontSize: 18, color: Colors.black)),
+      subtitle: Text(subtitle,
+          style: const TextStyle(fontSize: 16, color: Colors.black)),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16),
       onTap: onTap,
     );
@@ -354,7 +375,6 @@ class _BookingDetailsState extends State<BookingDetails> {
       appBar: AppBar(
         title: const Text("Booking Details"),
         backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
         elevation: 1,
         centerTitle: true,
       ),
@@ -387,7 +407,7 @@ class _BookingDetailsState extends State<BookingDetails> {
               margin: EdgeInsets.zero,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
-                side: BorderSide(color: Colors.grey.shade300),
+                side: BorderSide(color: Colors.grey.shade400),
               ),
               child: Column(
                 children: [
@@ -395,7 +415,7 @@ class _BookingDetailsState extends State<BookingDetails> {
                       Icons.category, "Specialist", widget.specialist),
                   Divider(
                     height: 15,
-                    color: Colors.grey.shade300,
+                    color: Colors.grey.shade400,
                   ),
                   _buildInfoTile(
                     Icons.location_on,
@@ -405,9 +425,16 @@ class _BookingDetailsState extends State<BookingDetails> {
                   ),
                   Divider(
                     height: 15,
-                    color: Colors.grey.shade300,
+                    color: Colors.grey.shade400,
                   ),
                   _buildInfoTile(Icons.access_time, "Time", widget.timeSlot),
+                  Divider(height: 15, color: Colors.grey.shade400),
+                  _buildInfoTile(
+                    Icons.video_call,
+                    "Join Virtual Meeting",
+                    "Click to join",
+                    onTap: () => _joinMeeting(),
+                  ),
                 ],
               ),
             ),
@@ -418,8 +445,7 @@ class _BookingDetailsState extends State<BookingDetails> {
                   child: ElevatedButton(
                     onPressed: _isCancelling ? null : _cancelBooking,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: Colors.red,
+                      backgroundColor: Colors.red,
                       side: BorderSide(color: Colors.red),
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
@@ -433,7 +459,8 @@ class _BookingDetailsState extends State<BookingDetails> {
                                 CircularProgressIndicator(color: Colors.black),
                           )
                         : const Text("Cancel Booking",
-                            style: TextStyle(fontSize: 16)),
+                            style:
+                                TextStyle(fontSize: 18, color: Colors.black)),
                   ),
                 ),
                 const SizedBox(width: 20),
@@ -441,15 +468,14 @@ class _BookingDetailsState extends State<BookingDetails> {
                   child: ElevatedButton(
                     onPressed: _reschedule,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: Colors.blue,
-                      side: BorderSide(color: Colors.blue),
+                      backgroundColor: Colors.teal.shade100,
+                      side: BorderSide(color: Colors.teal.shade100),
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12)),
                     ),
                     child: const Text("Reschedule",
-                        style: TextStyle(fontSize: 16)),
+                        style: TextStyle(fontSize: 18, color: Colors.black)),
                   ),
                 ),
               ],
