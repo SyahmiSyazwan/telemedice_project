@@ -11,6 +11,14 @@ class DatabaseMethods {
         SetOptions(merge: true)); // use SetOptions() to update existing fields
   }
 
+  // Delete user information
+  Future<void> deleteUserDetail(String id) async {
+    return await FirebaseFirestore.instance
+        .collection("users")
+        .doc(id)
+        .delete();
+  }
+
   // Query the list of time periods that a doctor has been booked for on a certain day
   Future<List<String>> getBookedTimeSlots(
       String doctorId, String date, String location, String specialist) async {

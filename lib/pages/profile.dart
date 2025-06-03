@@ -13,6 +13,7 @@ class Profile extends StatefulWidget {
   State<Profile> createState() => _ProfileState();
 }
 
+// Profile state class
 class _ProfileState extends State<Profile> {
   String? name, email;
   final ImagePicker _picker = ImagePicker();
@@ -61,6 +62,7 @@ class _ProfileState extends State<Profile> {
     setState(() => _isLoading = false);
   }
 
+  // Get image from camera or gallery
   Future<void> _getImage(ImageSource source) async {
     final pickedImage = await _picker.pickImage(source: source);
     if (pickedImage != null) {
@@ -74,6 +76,119 @@ class _ProfileState extends State<Profile> {
     }
   }
 
+  // Confirm delete account dialog
+  Future<void> _confirmDeleteAccount() async {
+    final passwordController = TextEditingController();
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("DELETE ACCOUNT",
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              "To delete account, please enter your password for verification",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w400,
+                  color: Colors.black),
+            ),
+            const SizedBox(height: 20),
+            TextField(
+              controller: passwordController,
+              obscureText: true,
+              decoration: const InputDecoration(
+                labelText: "Password",
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ],
+        ),
+        actionsPadding:
+            const EdgeInsets.symmetric(horizontal: 25, vertical: 15),
+        actions: [
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.teal.shade100,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  child: const Text("Cancel",
+                      style: TextStyle(color: Colors.black, fontSize: 20)),
+                ),
+              ),
+              const SizedBox(width: 20),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  child: const Text("Delete",
+                      style: TextStyle(color: Colors.black, fontSize: 20)),
+                ),
+              ),
+            ],
+          )
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      final password = passwordController.text.trim();
+      final user = FirebaseAuth.instance.currentUser;
+
+      if (user != null && user.email != null && password.isNotEmpty) {
+        final cred = EmailAuthProvider.credential(
+          email: user.email!,
+          password: password,
+        );
+
+        try {
+          // Reauthenticate
+          await user.reauthenticateWithCredential(cred);
+
+          // Delete account
+          await DatabaseMethods().deleteUserDetail(user.uid);
+          await user.delete();
+          await SharedPreferenceHelper().clear();
+
+          if (context.mounted) {
+            Navigator.pushReplacementNamed(context, '/login');
+          }
+        } on FirebaseAuthException catch (e) {
+          String errorMsg = "Failed to Delete Account";
+          if (e.code == 'wrong-password') {
+            errorMsg = "Wrong password. Please try again";
+          } else if (e.code == 'requires-recent-login') {
+            errorMsg = "Please Login Again and Try Deleting Your Account";
+          }
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(errorMsg)),
+          );
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Password Cannot be Empty")),
+        );
+      }
+    }
+  }
+
+  // Update user name
   Future<void> _updateUserName() async {
     final newName = nameController.text.trim();
     if (newName.isEmpty) return;
@@ -95,6 +210,7 @@ class _ProfileState extends State<Profile> {
     );
   }
 
+  // Profile info tile widget
   Widget _profileInfoTile({
     required IconData icon,
     required String title,
@@ -130,6 +246,7 @@ class _ProfileState extends State<Profile> {
     );
   }
 
+  // Confirm logout dialog
   Future<void> _confirmLogout() async {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -189,11 +306,12 @@ class _ProfileState extends State<Profile> {
     }
   }
 
+  // Show image source dialog
   void _showImageSourceDialog() {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('SELECT IMAGE SOURCE',
+        title: const Text('SELECT IMAGE',
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
         content: Column(
@@ -204,7 +322,7 @@ class _ProfileState extends State<Profile> {
                 Icons.camera_alt,
                 color: Colors.black,
               ),
-              title: const Text('Take a photo',
+              title: const Text('Take A Photo',
                   style: TextStyle(fontSize: 18, color: Colors.black)),
               onTap: () {
                 Navigator.pop(context);
@@ -214,7 +332,7 @@ class _ProfileState extends State<Profile> {
             ListTile(
               leading: const Icon(Icons.photo_library, color: Colors.black),
               title: const Text(
-                'Choose from gallery',
+                'Choose From Gallery',
                 style: TextStyle(fontSize: 18, color: Colors.black),
               ),
               onTap: () {
@@ -228,6 +346,7 @@ class _ProfileState extends State<Profile> {
     );
   }
 
+  // Build method to render the profile page
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -331,6 +450,33 @@ class _ProfileState extends State<Profile> {
                           icon: Icons.email,
                           title: "Email",
                           controller: emailController,
+                        ),
+                        const SizedBox(height: 20),
+                        Container(
+                          width: 250,
+                          margin: const EdgeInsets.symmetric(
+                              horizontal: 22.0, vertical: 10.0),
+                          child: ElevatedButton.icon(
+                            icon: const Icon(Icons.delete_forever,
+                                color: Colors.black, size: 25),
+                            label: const Text(
+                              "Delete Account",
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.teal.shade100,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              elevation: 4,
+                            ),
+                            onPressed: _confirmDeleteAccount,
+                          ),
                         ),
                       ],
                     ),
