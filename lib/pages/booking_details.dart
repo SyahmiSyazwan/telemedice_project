@@ -2,7 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:jitsi_meet_flutter_sdk/jitsi_meet_flutter_sdk.dart';
-import 'package:telemedice_project/pages/bottomNav.dart';
+import 'package:telemedice_project/pages/bottom_nav.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class BookingDetails extends StatefulWidget {

@@ -2,7 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:telemedice_project/auth/database.dart';
 import 'package:telemedice_project/auth/shared.pref.dart';
-import 'package:telemedice_project/pages/bottomNav.dart';
+import 'package:telemedice_project/pages/bottom_nav.dart';
 import 'package:telemedice_project/pages/login.dart';
 
 class Signup extends StatefulWidget {
@@ -99,8 +99,8 @@ class _SignupState extends State<Signup> {
                               const Text(
                                 'Healthcare at your fingertips -\ntap and connect',
                                 textAlign: TextAlign.left,
-                                style:
-                                    TextStyle(fontSize: 12, color: Colors.grey),
+                                style: TextStyle(
+                                    fontSize: 12, color: Colors.black),
                               ),
                             ],
                           ),
@@ -214,6 +214,10 @@ class _SignupState extends State<Signup> {
                       },
                       child: Text(
                         "Already have an account? Login",
+                        style: TextStyle(
+                            color: Colors.red,
+                            fontSize: 16,
+                            decoration: TextDecoration.underline),
                       ),
                     ),
                   ],

@@ -15,8 +15,6 @@ class SpecialistSelection extends StatefulWidget {
 }
 
 class _SpecialistSelectionState extends State<SpecialistSelection> {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-
   Future<int> _countDoctorsForSpecialistAndLocation(
       String specialist, String location) async {
     final snapshot = await FirebaseFirestore.instance

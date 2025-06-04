@@ -1,6 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:telemedice_project/pages/bottomNav.dart';
+import 'package:telemedice_project/pages/bottom_nav.dart';
 import 'package:telemedice_project/pages/forgotpassword.dart';
 import 'package:telemedice_project/pages/signup.dart';
 

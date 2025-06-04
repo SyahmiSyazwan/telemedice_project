@@ -2,7 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:telemedice_project/auth/database.dart';
-import 'package:telemedice_project/pages/bottomNav.dart';
+import 'package:telemedice_project/pages/bottom_nav.dart';
 
 class AppointmentBooking extends StatefulWidget {
   final String doctorName;
