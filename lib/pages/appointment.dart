@@ -12,7 +12,7 @@ class Appointment extends StatefulWidget {
 
 class _AppointmentState extends State<Appointment> {
   AppointmentType? _selectedType;
-  String currentLocation = "UTM, Skudai, Johor";
+  String currentLocation = "Current Location";
 
   @override
   Widget build(BuildContext context) {
@@ -38,12 +38,18 @@ class _AppointmentState extends State<Appointment> {
           children: [
             const Text(
               "What is the patient's current location?",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
+            const Text("(Change Current Location)",
+                style: TextStyle(
+                    color: Colors.red,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             const Text(
               "This would help us connect you with the best available licensed Doctor for that location on our platform.",
-              style: TextStyle(color: Colors.black),
+              style: TextStyle(color: Colors.black, fontSize: 16),
+              textAlign: TextAlign.justify,
             ),
             const SizedBox(height: 15),
             Row(
@@ -73,13 +79,13 @@ class _AppointmentState extends State<Appointment> {
                     },
                     child: Text("Change",
                         style: TextStyle(
-                            color: Colors.blue, fontWeight: FontWeight.bold))),
+                            color: Colors.red, fontWeight: FontWeight.bold))),
               ],
             ),
             const SizedBox(height: 30),
             const Text(
               "What's the type of appointment you would like to make?",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
             ),
             const Text("(Tap to Select)",
                 style: TextStyle(
@@ -176,7 +182,7 @@ class _AppointmentState extends State<Appointment> {
                 ),
               ],
             ),
-            const SizedBox(height: 200),
+            const SizedBox(height: 150),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
