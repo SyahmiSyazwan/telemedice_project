@@ -63,6 +63,7 @@ class _HomeState extends State<Home> {
       'specialist': data['specialist'],
       'location': data['location'],
       'date': data['date'],
+      'appointmentType': data['appointmentType'],
     };
   }
 
@@ -70,17 +71,20 @@ class _HomeState extends State<Home> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.teal.shade100,
         toolbarHeight: 70,
-        backgroundColor: Colors.white,
         elevation: 0,
         automaticallyImplyLeading: false,
         title: const Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text("Hi, User!",
-                style: TextStyle(color: Colors.black, fontSize: 22)),
+                style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold)),
             Text("What do you want to do today?",
-                style: TextStyle(color: Colors.black54, fontSize: 14)),
+                style: TextStyle(color: Colors.black, fontSize: 14)),
           ],
         ),
       ),
@@ -91,9 +95,9 @@ class _HomeState extends State<Home> {
           children: [
             const Text("Upcoming Appointments",
                 style: TextStyle(
-                    fontSize: 18,
+                    fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: Colors.blue)),
+                    color: Colors.black)),
             const SizedBox(height: 10),
 
             FutureBuilder<Map<String, dynamic>?>(
@@ -154,6 +158,7 @@ class _HomeState extends State<Home> {
                             specialist: appointment['specialist'],
                             location: appointment['location'],
                             date: appointment['date'],
+                            appointmentType: appointment['appointmentType'],
                           ),
                         ),
                       );
@@ -166,11 +171,17 @@ class _HomeState extends State<Home> {
             const SizedBox(height: 20),
 
             const Text("For General Needs",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black)),
             const SizedBox(height: 5),
             const Text(
-              "Get medical advice, prescriptions, test & referrals by video appointment with our doctors.",
-              style: TextStyle(color: Colors.black54),
+              "Get medical advice, prescriptions, test & referrals by video appointment with our doctors",
+              style: TextStyle(
+                color: Colors.black,
+                fontSize: 16,
+              ),
             ),
             const SizedBox(height: 10),
 
@@ -188,14 +199,14 @@ class _HomeState extends State<Home> {
                 );
               },
             ),
-            const SizedBox(height: 10),
+            /*const SizedBox(height: 10),
             _buildActionCard(
               icon: Icons.medical_services_outlined,
               iconColor: Colors.blue,
               title: "Online Consultation with Doctor",
               subtitle: "Get medical advice, prescriptions, test & more.",
               onTap: () {},
-            ),
+            ),*/
             const SizedBox(height: 10),
             _buildActionCard(
               icon: Icons.favorite_border,
@@ -224,6 +235,7 @@ class _HomeState extends State<Home> {
       elevation: 0,
       child: ListTile(
         leading: CircleAvatar(
+          // ignore: deprecated_member_use
           backgroundColor: iconColor.withOpacity(0.1),
           child: Icon(icon, color: iconColor),
         ),

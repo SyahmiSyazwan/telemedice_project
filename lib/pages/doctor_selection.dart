@@ -1,14 +1,19 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:telemedice_project/models/appointment_type.dart';
 import 'package:telemedice_project/models/doctor.dart';
 import 'package:telemedice_project/pages/appointment_booking.dart';
 
 class DoctorSelection extends StatefulWidget {
   final String specialistLabel;
   final String location;
+  final AppointmentType appointmentType;
 
   const DoctorSelection(
-      {super.key, required this.specialistLabel, required this.location});
+      {super.key,
+      required this.specialistLabel,
+      required this.location,
+      required this.appointmentType});
 
   @override
   State<DoctorSelection> createState() => _DoctorSelectionState();
@@ -144,6 +149,7 @@ class _DoctorSelectionState extends State<DoctorSelection> {
                   specialistLabel: doctor.specialistLabel,
                   doctorId: doctor.id,
                   location: widget.location,
+                  appointmentType: widget.appointmentType,
                 ),
               ),
             );

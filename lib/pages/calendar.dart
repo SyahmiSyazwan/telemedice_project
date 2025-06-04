@@ -149,6 +149,8 @@ class _CalendarState extends State<Calendar> {
                                       specialist: booking['specialist'],
                                       location: booking['location'],
                                       date: booking['date'] ?? '',
+                                      appointmentType:
+                                          booking['appointmentType'] ?? '',
                                     ),
                                   ),
                                 );

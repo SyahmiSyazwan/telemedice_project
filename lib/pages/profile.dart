@@ -56,7 +56,7 @@ class _ProfileState extends State<Profile> {
     name = data['Name'] ?? user.displayName ?? 'Unknown';
     email = data['Email'] ?? user.email ?? 'unknown@email.com';
     role = data['Role'] ?? 'user';
-    staffID = (role == 'doctor') ? data['StaffID'] ?? 'N/A' : null;
+    staffID = data['StaffId'] ?? 'N/A';
 
     nameController.text = name!;
     emailController.text = email!;
@@ -493,11 +493,11 @@ class _ProfileState extends State<Profile> {
                           value: role ?? "No Role",
                         ),
                         const SizedBox(height: 10),
-                        if (staffID != null) // Only show if it's a doctor
+                        if (role == "Doctor") // Only show if it's a doctor
                           _profileDisplayTile(
                             icon: Icons.badge_outlined,
                             title: "Staff ID",
-                            value: staffID!,
+                            value: staffID ?? "N/A",
                           ),
                         Container(
                           width: 250,

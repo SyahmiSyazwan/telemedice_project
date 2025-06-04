@@ -96,6 +96,7 @@ class _SpecialistSelectionState extends State<SpecialistSelection> {
                   context,
                   MaterialPageRoute(
                       builder: (context) => DoctorSelection(
+                            appointmentType: widget.appointmentType,
                             specialistLabel: "pediatrician",
                             location: widget.location,
                           )),
@@ -112,6 +113,7 @@ class _SpecialistSelectionState extends State<SpecialistSelection> {
                   context,
                   MaterialPageRoute(
                       builder: (context) => DoctorSelection(
+                            appointmentType: widget.appointmentType,
                             specialistLabel: "cardiologist",
                             location: widget.location,
                           )),
@@ -128,6 +130,7 @@ class _SpecialistSelectionState extends State<SpecialistSelection> {
                   context,
                   MaterialPageRoute(
                       builder: (context) => DoctorSelection(
+                            appointmentType: widget.appointmentType,
                             specialistLabel: "neurologist",
                             location: widget.location,
                           )),
@@ -144,6 +147,7 @@ class _SpecialistSelectionState extends State<SpecialistSelection> {
                   context,
                   MaterialPageRoute(
                       builder: (context) => DoctorSelection(
+                            appointmentType: widget.appointmentType,
                             specialistLabel: "dentist",
                             location: widget.location,
                           )),
@@ -160,6 +164,7 @@ class _SpecialistSelectionState extends State<SpecialistSelection> {
                   context,
                   MaterialPageRoute(
                       builder: (context) => DoctorSelection(
+                            appointmentType: widget.appointmentType,
                             specialistLabel: "ophthalmologist",
                             location: widget.location,
                           )),

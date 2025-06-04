@@ -2,24 +2,25 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:telemedice_project/auth/database.dart';
+import 'package:telemedice_project/models/appointment_type.dart';
 import 'package:telemedice_project/pages/bottom_nav.dart';
 
 class AppointmentBooking extends StatefulWidget {
   final String doctorName;
   final String doctorImage;
   final String specialistLabel;
-  // final String hospitalName;
   final String doctorId;
   final String location;
+  final AppointmentType appointmentType;
 
   const AppointmentBooking({
     super.key,
     required this.doctorName,
     required this.doctorImage,
     required this.specialistLabel,
-    // required this.hospitalName,
     required this.doctorId,
     required this.location,
+    required this.appointmentType,
   });
 
   @override
@@ -220,6 +221,7 @@ class _AppointmentBookingState extends State<AppointmentBooking> {
                             date: dateStr,
                             timeSlot: selectedTimeSlot!,
                             location: widget.location,
+                            appointmentType: widget.appointmentType.name,
                             specialist: widget.specialistLabel);
 
                         setState(() => isLoading = false);

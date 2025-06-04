@@ -43,6 +43,7 @@ class DatabaseMethods {
     required String timeSlot,
     required String location,
     required String specialist,
+    required String appointmentType,
   }) async {
     final docRef = _firestore.collection('appointments').doc();
 
@@ -72,6 +73,7 @@ class DatabaseMethods {
           'status': 'booked',
           'location': location,
           'specialist': specialist,
+          'appointmentType': appointmentType,
           'createdAt': FieldValue.serverTimestamp(),
         });
       });

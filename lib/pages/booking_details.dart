@@ -14,6 +14,7 @@ class BookingDetails extends StatefulWidget {
   final String specialist;
   final String location;
   final String date;
+  final String appointmentType;
 
   const BookingDetails({
     super.key,
@@ -25,6 +26,7 @@ class BookingDetails extends StatefulWidget {
     required this.specialist,
     required this.location,
     required this.date,
+    required this.appointmentType,
   });
 
   @override
@@ -381,7 +383,6 @@ class _BookingDetailsState extends State<BookingDetails> {
 
   @override
   Widget build(BuildContext context) {
-    print("BookingDetails date: ${widget.date}");
     return Scaffold(
       appBar: AppBar(
         title: const Text("Booking Details"),
@@ -420,14 +421,13 @@ class _BookingDetailsState extends State<BookingDetails> {
                 borderRadius: BorderRadius.circular(12),
                 side: BorderSide(color: Colors.grey.shade400),
               ),
-              child: Column(
-                children: [
-                  _buildInfoTile(
-                      Icons.category, "Specialist", widget.specialist),
-                  Divider(
-                    height: 15,
-                    color: Colors.grey.shade500,
-                  ),
+              child: Column(children: [
+                _buildInfoTile(Icons.category, "Specialist", widget.specialist),
+                Divider(
+                  height: 15,
+                  color: Colors.grey.shade500,
+                ),
+                if (widget.appointmentType == 'inPerson') ...[
                   _buildInfoTile(
                     Icons.location_on,
                     "Navigate Location",
@@ -438,8 +438,10 @@ class _BookingDetailsState extends State<BookingDetails> {
                     height: 15,
                     color: Colors.grey.shade400,
                   ),
-                  _buildInfoTile(Icons.access_time, "Time", widget.timeSlot),
-                  Divider(height: 15, color: Colors.grey.shade400),
+                ],
+                _buildInfoTile(Icons.access_time, "Time", widget.timeSlot),
+                Divider(height: 15, color: Colors.grey.shade400),
+                if (widget.appointmentType == 'virtual') ...[
                   _buildInfoTile(
                     Icons.video_call,
                     "Join Virtual Meeting",
@@ -447,7 +449,7 @@ class _BookingDetailsState extends State<BookingDetails> {
                     onTap: () => joinMeeting(widget.bookingId),
                   ),
                 ],
-              ),
+              ]),
             ),
             const SizedBox(height: 40),
             Row(

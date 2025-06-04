@@ -40,7 +40,7 @@ class _AppointmentState extends State<Appointment> {
             const SizedBox(height: 8),
             const Text(
               "This would help us connect you with the best available licensed Doctor for that location on our platform.",
-              style: TextStyle(color: Colors.black54),
+              style: TextStyle(color: Colors.black),
             ),
             const SizedBox(height: 15),
             Row(
@@ -74,7 +74,7 @@ class _AppointmentState extends State<Appointment> {
             ),
             const SizedBox(height: 30),
             const Text(
-              "What's the type of appointment you\nwould like to make?",
+              "What's the type of appointment you would like to make?",
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
@@ -110,7 +110,7 @@ class _AppointmentState extends State<Appointment> {
                               color: Colors.white, size: 30),
                           SizedBox(height: 10),
                           Text(
-                            "In-Person\nMedical Consultation",
+                            "In-Person Medical Consultation",
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
@@ -153,7 +153,7 @@ class _AppointmentState extends State<Appointment> {
                               color: Colors.white, size: 30),
                           SizedBox(height: 10),
                           Text(
-                            "Virtual Medical\nConsultation",
+                            "Virtual Medical Consultation",
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
