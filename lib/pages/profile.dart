@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -15,7 +16,7 @@ class Profile extends StatefulWidget {
 
 // Profile state class
 class _ProfileState extends State<Profile> {
-  String? name, email;
+  String? name, email, role, staffID;
   final ImagePicker _picker = ImagePicker();
   File? selectedImage;
   bool _isLoading = true;
@@ -41,25 +42,28 @@ class _ProfileState extends State<Profile> {
   Future<void> _loadUserData() async {
     final user = FirebaseAuth.instance.currentUser;
 
-    name = await SharedPreferenceHelper().getUserName();
-    email = await SharedPreferenceHelper().getUserEmail();
+    if (user == null) return;
 
-    if (user != null) {
-      await user.reload();
-      name ??= user.displayName ?? "UserName";
-      email ??= user.email ?? "user@email.com";
+    final uid = user.uid;
+    final doc =
+        await FirebaseFirestore.instance.collection('users').doc(uid).get();
 
-      if (await SharedPreferenceHelper().getUserName() == null) {
-        await SharedPreferenceHelper().saveUserName(name!);
-      }
-      if (await SharedPreferenceHelper().getUserEmail() == null) {
-        await SharedPreferenceHelper().saveUserEmail(email!);
-      }
-    }
+    if (!doc.exists) return;
+
+    final data = doc.data();
+    if (data == null) return;
+
+    name = data['Name'] ?? user.displayName ?? 'Unknown';
+    email = data['Email'] ?? user.email ?? 'unknown@email.com';
+    role = data['Role'] ?? 'user';
+    staffID = (role == 'doctor') ? data['StaffID'] ?? 'N/A' : null;
 
     nameController.text = name!;
     emailController.text = email!;
-    setState(() => _isLoading = false);
+
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   // Get image from camera or gallery
@@ -210,7 +214,7 @@ class _ProfileState extends State<Profile> {
     );
   }
 
-  // Profile info tile widget
+  // Profile editable
   Widget _profileInfoTile({
     required IconData icon,
     required String title,
@@ -239,6 +243,36 @@ class _ProfileState extends State<Profile> {
               ),
               style:
                   const TextStyle(fontSize: 18.0, fontWeight: FontWeight.w500),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Profile non-editable display
+  Widget _profileDisplayTile({
+    required IconData icon,
+    required String title,
+    required String value,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      child: Row(
+        children: [
+          Icon(icon, size: 30.0, color: Colors.teal),
+          const SizedBox(width: 16.0),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title,
+                    style: const TextStyle(fontSize: 14.0, color: Colors.grey)),
+                const SizedBox(height: 4.0),
+                Text(value,
+                    style: const TextStyle(
+                        fontSize: 18.0, fontWeight: FontWeight.w500)),
+              ],
             ),
           ),
         ],
@@ -437,7 +471,7 @@ class _ProfileState extends State<Profile> {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 10),
                         _profileInfoTile(
                           icon: Icons.person,
                           title: "Name",
@@ -445,13 +479,25 @@ class _ProfileState extends State<Profile> {
                           onSave: _updateUserName,
                           showUpdateButton: true,
                         ),
-                        const SizedBox(height: 20),
-                        _profileInfoTile(
+                        const SizedBox(height: 10),
+                        _profileDisplayTile(
                           icon: Icons.email,
                           title: "Email",
-                          controller: emailController,
+                          value: email ?? "No Email",
                         ),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 10),
+                        _profileDisplayTile(
+                          icon: Icons.person_pin,
+                          title: "Role",
+                          value: role ?? "No Role",
+                        ),
+                        const SizedBox(height: 10),
+                        if (staffID != null) // Only show if it's a doctor
+                          _profileDisplayTile(
+                            icon: Icons.badge_outlined,
+                            title: "Staff ID",
+                            value: staffID!,
+                          ),
                         Container(
                           width: 250,
                           margin: const EdgeInsets.symmetric(
@@ -468,7 +514,7 @@ class _ProfileState extends State<Profile> {
                               ),
                             ),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.teal.shade100,
+                              backgroundColor: Colors.red,
                               padding: const EdgeInsets.symmetric(vertical: 12),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
@@ -488,19 +534,19 @@ class _ProfileState extends State<Profile> {
                       horizontal: 22.0, vertical: 20.0),
                   child: ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
-                      padding: const EdgeInsets.symmetric(vertical: 15),
+                      backgroundColor: Colors.teal.shade100,
+                      padding: const EdgeInsets.symmetric(vertical: 10),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
                     icon: const Icon(Icons.exit_to_app,
-                        color: Colors.black, size: 25),
+                        color: Colors.black, size: 28),
                     label: const Text(
                       "Log Out",
                       style: TextStyle(
                           color: Colors.black,
-                          fontSize: 18,
+                          fontSize: 20,
                           fontWeight: FontWeight.bold),
                     ),
                     onPressed: _confirmLogout,

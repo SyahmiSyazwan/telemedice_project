@@ -42,7 +42,7 @@ class Onboard extends StatelessWidget {
                           'Healthcare at your fingertips -\ntap and connect',
                           style: TextStyle(
                             fontSize: 14,
-                            color: Colors.grey,
+                            color: Colors.black,
                           ),
                         ),
                       ],
@@ -64,7 +64,7 @@ class Onboard extends StatelessWidget {
                 const Text(
                   "Let's Get Started",
                   style: TextStyle(
-                    fontSize: 24,
+                    fontSize: 26,
                     fontWeight: FontWeight.bold,
                     color: Colors.black,
                   ),
@@ -75,10 +75,10 @@ class Onboard extends StatelessWidget {
                 const Text(
                   "Instant Access to Quality\nHealthcare Anytime, AnyWhere.",
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 14, color: Colors.black54),
+                  style: TextStyle(fontSize: 16, color: Colors.black),
                 ),
 
-                const SizedBox(height: 30),
+                const SizedBox(height: 90),
 
                 // Buttons
                 SizedBox(
@@ -95,7 +95,10 @@ class Onboard extends StatelessWidget {
                       foregroundColor: Colors.black,
                       padding: const EdgeInsets.symmetric(vertical: 15),
                     ),
-                    child: const Text('Sign In'),
+                    child: const Text(
+                      'Sign In',
+                      style: TextStyle(fontSize: 18),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -114,7 +117,10 @@ class Onboard extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(vertical: 15),
                       side: const BorderSide(color: Colors.black12),
                     ),
-                    child: const Text('Create an account'),
+                    child: const Text(
+                      'Create An Account',
+                      style: TextStyle(fontSize: 18),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 30),

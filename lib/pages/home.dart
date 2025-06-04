@@ -83,13 +83,6 @@ class _HomeState extends State<Home> {
                 style: TextStyle(color: Colors.black54, fontSize: 14)),
           ],
         ),
-        actions: [
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.notifications_active_outlined),
-            color: Colors.black,
-          ),
-        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),

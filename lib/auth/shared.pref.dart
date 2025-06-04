@@ -26,6 +26,16 @@ class SharedPreferenceHelper {
     return prefs.setString(userProfileKey, getUserProfile);
   }
 
+  Future<bool> saveUserRole(String role) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.setString("userRole", role);
+  }
+
+  Future<bool> saveStaffId(String staffId) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.setString("staffId", staffId);
+  }
+
   Future<String?> getUserId() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.getString(userIdKey);
@@ -44,6 +54,16 @@ class SharedPreferenceHelper {
   Future<String?> getUserProfile() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.getString(userProfileKey);
+  }
+
+  Future<String?> getStaffId() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString("staffId");
+  }
+
+  Future<String?> getUserRole() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString("userRole");
   }
 
   // Clear all saved data method
