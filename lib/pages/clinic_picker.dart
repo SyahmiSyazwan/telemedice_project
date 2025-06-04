@@ -111,7 +111,11 @@ class _ClinicPickerState extends State<ClinicPicker> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Select Nearby Clinic'),
+        backgroundColor: Colors.teal.shade100,
+        title: const Text(
+          'Select Nearby Clinic',
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
       ),
       body: currentPosition == null
           ? const Center(child: CircularProgressIndicator())
