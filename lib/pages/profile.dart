@@ -46,7 +46,7 @@ class _ProfileState extends State<Profile> {
 
     if (user != null) {
       await user.reload();
-      name ??= user.displayName ?? "User Name";
+      name ??= user.displayName ?? "UserName";
       email ??= user.email ?? "user@email.com";
 
       if (await SharedPreferenceHelper().getUserName() == null) {

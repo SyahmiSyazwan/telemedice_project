@@ -1,7 +1,8 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:jitsi_meet_flutter_sdk/jitsi_meet_flutter_sdk.dart';
 import 'package:telemedice_project/pages/bottomNav.dart';
-import 'package:telemedice_project/services/jitsi_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class BookingDetails extends StatefulWidget {
@@ -323,14 +324,31 @@ class _BookingDetailsState extends State<BookingDetails> {
     }
   }
 
-  void _joinMeeting() async {
-    final jitsiService = JitsiService();
-    await jitsiService.joinMeeting(
-      roomName: "booking_${widget.bookingId}", // make it dynamic if needed
-      userName: "Flutter User", // optionally replace with logged-in user's name
-      email: "user@example.com",
-      subject: "Appointment with Dr. ${widget.doctorName}",
+  Future<void> joinMeeting(String appointmentId) async {
+    final user = FirebaseAuth.instance.currentUser;
+    final uid = user?.uid;
+
+    String displayName = "Guest";
+    String? email = user?.email;
+
+    if (uid != null) {
+      final doc =
+          await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      if (doc.exists) {
+        displayName = doc.data()?['Name'] ?? "Guest";
+        email = doc.data()?['Email'] ?? email;
+      }
+    }
+
+    final options = JitsiMeetConferenceOptions(
+      room: appointmentId,
+      userInfo: JitsiMeetUserInfo(
+        displayName: displayName,
+        email: email,
+      ),
     );
+
+    await JitsiMeet().join(options);
   }
 
   Widget _buildInfoTile(IconData icon, String title, String subtitle,
@@ -408,11 +426,11 @@ class _BookingDetailsState extends State<BookingDetails> {
                       Icons.category, "Specialist", widget.specialist),
                   Divider(
                     height: 15,
-                    color: Colors.grey.shade400,
+                    color: Colors.grey.shade500,
                   ),
                   _buildInfoTile(
                     Icons.location_on,
-                    "Location",
+                    "Navigate Location",
                     widget.location,
                     onTap: () => _openMap(widget.location),
                   ),
@@ -426,7 +444,7 @@ class _BookingDetailsState extends State<BookingDetails> {
                     Icons.video_call,
                     "Join Virtual Meeting",
                     "Click to join",
-                    onTap: () => _joinMeeting(),
+                    onTap: () => joinMeeting(widget.bookingId),
                   ),
                 ],
               ),
