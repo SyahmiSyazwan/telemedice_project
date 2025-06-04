@@ -45,9 +45,9 @@ class _DoctorSelectionState extends State<DoctorSelection> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("${widget.specialistLabel} Doctors",
+        title: Text("${widget.specialistLabel} DOCTORS",
             style: const TextStyle(color: Colors.black)),
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.teal.shade100,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.black),
       ),
