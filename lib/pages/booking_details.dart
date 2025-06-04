@@ -71,16 +71,15 @@ class _BookingDetailsState extends State<BookingDetails> {
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 20, vertical: 12),
-                      backgroundColor: Colors.white,
+                      backgroundColor: Colors.teal.shade100,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      side: const BorderSide(color: Colors.black),
                     ),
                     child: const Text(
                       "Cancel",
                       style: TextStyle(
-                        fontSize: 18,
+                        fontSize: 20,
                         color: Colors.black,
                         fontWeight: FontWeight.bold,
                       ),
@@ -94,17 +93,16 @@ class _BookingDetailsState extends State<BookingDetails> {
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 20, vertical: 12),
-                      backgroundColor: Colors.white,
+                      backgroundColor: Colors.red,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      side: const BorderSide(color: Colors.red),
                     ),
                     child: const Text(
                       "Yes",
                       style: TextStyle(
-                        fontSize: 18,
-                        color: Colors.red,
+                        fontSize: 20,
+                        color: Colors.black,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -190,7 +188,12 @@ class _BookingDetailsState extends State<BookingDetails> {
         ];
 
         return AlertDialog(
-          title: const Text("Select new time"),
+          title: const Text("Select New Time Slot",
+              style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black),
+              textAlign: TextAlign.center),
           content: SizedBox(
             width: double.maxFinite,
             height: 300,
@@ -254,16 +257,15 @@ class _BookingDetailsState extends State<BookingDetails> {
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 20, vertical: 12),
-                      backgroundColor: Colors.white,
+                      backgroundColor: Colors.teal.shade100,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      side: const BorderSide(color: Colors.black),
                     ),
                     child: const Text(
                       "Cancel",
                       style: TextStyle(
-                          fontSize: 18,
+                          fontSize: 20,
                           color: Colors.black,
                           fontWeight: FontWeight.bold),
                     ),
@@ -276,17 +278,16 @@ class _BookingDetailsState extends State<BookingDetails> {
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 20, vertical: 12),
-                      backgroundColor: Colors.white,
+                      backgroundColor: Colors.teal.shade100,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      side: const BorderSide(color: Colors.blue),
                     ),
                     child: const Text(
                       "Yes",
                       style: TextStyle(
-                          fontSize: 18,
-                          color: Colors.blue,
+                          fontSize: 20,
+                          color: Colors.black,
                           fontWeight: FontWeight.bold),
                     ),
                   ),
@@ -385,8 +386,12 @@ class _BookingDetailsState extends State<BookingDetails> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Booking Details"),
-        backgroundColor: Colors.white,
+        title: const Text("BOOKING DETAIL",
+            style: TextStyle(
+                color: Colors.black,
+                fontWeight: FontWeight.bold,
+                fontSize: 24)),
+        backgroundColor: Colors.teal.shade100,
         elevation: 1,
         centerTitle: true,
       ),

@@ -14,6 +14,25 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  String? userName;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchUserName();
+  }
+
+  Future<void> fetchUserName() async {
+    final userId = _auth.currentUser?.uid;
+    if (userId == null) return;
+
+    final userDoc = await _firestore.collection('users').doc(userId).get();
+    if (userDoc.exists) {
+      setState(() {
+        userName = userDoc.data()?['Name'] ?? 'User';
+      });
+    }
+  }
 
   Future<Map<String, dynamic>?> _getUpcomingAppointment() async {
     final userId = _auth.currentUser?.uid;
@@ -75,15 +94,15 @@ class _HomeState extends State<Home> {
         toolbarHeight: 70,
         elevation: 0,
         automaticallyImplyLeading: false,
-        title: const Column(
+        title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Hi, User!",
-                style: TextStyle(
+            Text("HI, ${userName ?? 'User'}",
+                style: const TextStyle(
                     color: Colors.black,
                     fontSize: 22,
                     fontWeight: FontWeight.bold)),
-            Text("What do you want to do today?",
+            const Text("What do you want to do today?",
                 style: TextStyle(color: Colors.black, fontSize: 14)),
           ],
         ),
@@ -93,7 +112,7 @@ class _HomeState extends State<Home> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("Upcoming Appointments",
+            const Text("UPCOMING APPOINTMENT",
                 style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -119,7 +138,10 @@ class _HomeState extends State<Home> {
                       title: const Text(
                           "You currently don't have an appointment scheduled."),
                       subtitle: const Text("Book an appointment today!"),
-                      trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                      trailing: const Icon(
+                        Icons.arrow_forward_ios,
+                        size: 20,
+                      ),
                       onTap: () {
                         Navigator.push(
                             context,
@@ -141,10 +163,16 @@ class _HomeState extends State<Home> {
                     leading:
                         const Icon(Icons.calendar_today, color: Colors.green),
                     title: Text(
-                        "Appointment with ${appointment['doctorName']} on ${appointment['date']} at ${appointment['timeSlot']}"),
+                      "Appointment with ${appointment['doctorName']} \n${appointment['date']} at ${appointment['timeSlot']}",
+                      style: TextStyle(
+                          color: Colors.black, fontWeight: FontWeight.w500),
+                      textAlign: TextAlign.justify,
+                    ),
                     subtitle: Text(
-                        "${appointment['specialist']} • ${appointment['location']}"),
-                    trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                      "${appointment['specialist']} • ${appointment['location']}",
+                      style: TextStyle(color: Colors.black),
+                    ),
+                    trailing: const Icon(Icons.arrow_forward_ios, size: 20),
                     onTap: () {
                       Navigator.push(
                         context,
@@ -170,7 +198,7 @@ class _HomeState extends State<Home> {
 
             const SizedBox(height: 20),
 
-            const Text("For General Needs",
+            const Text("GENERAL NEEDS",
                 style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -182,6 +210,7 @@ class _HomeState extends State<Home> {
                 color: Colors.black,
                 fontSize: 16,
               ),
+              textAlign: TextAlign.justify,
             ),
             const SizedBox(height: 10),
 
@@ -240,8 +269,11 @@ class _HomeState extends State<Home> {
           child: Icon(icon, color: iconColor),
         ),
         title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: Text(subtitle),
-        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+        subtitle: Text(
+          subtitle,
+          style: TextStyle(color: Colors.black),
+        ),
+        trailing: const Icon(Icons.arrow_forward_ios, size: 20),
         onTap: onTap,
       ),
     );

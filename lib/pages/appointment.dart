@@ -18,9 +18,12 @@ class _AppointmentState extends State<Appointment> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title:
-            const Text("Appointments", style: TextStyle(color: Colors.black)),
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.teal.shade100,
+        title: const Text("APPOINTMENT",
+            style: TextStyle(
+                color: Colors.black,
+                fontWeight: FontWeight.bold,
+                fontSize: 24)),
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.black),
         leading: IconButton(
@@ -68,8 +71,9 @@ class _AppointmentState extends State<Appointment> {
                         });
                       }
                     },
-                    child:
-                        Text("Change", style: TextStyle(color: Colors.blue))),
+                    child: Text("Change",
+                        style: TextStyle(
+                            color: Colors.blue, fontWeight: FontWeight.bold))),
               ],
             ),
             const SizedBox(height: 30),
@@ -77,12 +81,19 @@ class _AppointmentState extends State<Appointment> {
               "What's the type of appointment you would like to make?",
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
+            const Text("(Tap to Select)",
+                style: TextStyle(
+                    color: Colors.red,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold)),
             const SizedBox(height: 20),
             Row(
+              mainAxisAlignment:
+                  MainAxisAlignment.center, // <-- Center the Row children
               children: [
                 SizedBox(
                   width: 150,
-                  height: 140,
+                  height: 180,
                   child: GestureDetector(
                     onTap: () {
                       setState(() {
@@ -106,14 +117,13 @@ class _AppointmentState extends State<Appointment> {
                       child: const Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.local_hospital,
-                              color: Colors.white, size: 30),
+                          Icon(Icons.person, color: Colors.black, size: 30),
                           SizedBox(height: 10),
                           Text(
                             "In-Person Medical Consultation",
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                              color: Colors.black,
                             ),
                             textAlign: TextAlign.center,
                           ),
@@ -125,7 +135,7 @@ class _AppointmentState extends State<Appointment> {
                 const SizedBox(width: 15),
                 SizedBox(
                   width: 150,
-                  height: 140,
+                  height: 180,
                   child: GestureDetector(
                     onTap: () {
                       setState(() {
@@ -149,14 +159,13 @@ class _AppointmentState extends State<Appointment> {
                       child: const Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.directions_car,
-                              color: Colors.white, size: 30),
+                          Icon(Icons.video_call, color: Colors.black, size: 30),
                           SizedBox(height: 10),
                           Text(
-                            "Virtual Medical Consultation",
+                            "Virtual \n Medical Consultation",
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                              color: Colors.black,
                             ),
                             textAlign: TextAlign.center,
                           ),
@@ -167,7 +176,7 @@ class _AppointmentState extends State<Appointment> {
                 ),
               ],
             ),
-            const SizedBox(height: 40),
+            const SizedBox(height: 200),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -202,7 +211,10 @@ class _AppointmentState extends State<Appointment> {
                       _selectedType == null ? Colors.black45 : Colors.black,
                   padding: const EdgeInsets.symmetric(vertical: 15),
                 ),
-                child: const Text("Next — Select a Specialist  →"),
+                child: const Text(
+                  "Select A Specialist",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
               ),
             ),
           ],
