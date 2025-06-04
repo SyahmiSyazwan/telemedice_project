@@ -267,7 +267,8 @@ class _ProfileState extends State<Profile> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(title,
-                    style: const TextStyle(fontSize: 14.0, color: Colors.grey)),
+                    style:
+                        const TextStyle(fontSize: 14.0, color: Colors.black)),
                 const SizedBox(height: 4.0),
                 Text(value,
                     style: const TextStyle(

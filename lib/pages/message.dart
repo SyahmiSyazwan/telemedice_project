@@ -45,13 +45,16 @@ class Messages extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFEFF7F6), // light background
       appBar: AppBar(
-        title: const Text('Messages'),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
+        backgroundColor: Colors.teal.shade100,
+        title: const Text('MESSAGES',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
+            )),
+        automaticallyImplyLeading: false,
         centerTitle: true,
-        foregroundColor: Colors.black87,
       ),
       body: Column(
         children: [
@@ -68,7 +71,10 @@ class Messages extends StatelessWidget {
                     const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(15),
-                  borderSide: BorderSide.none,
+                  borderSide: const BorderSide(
+                    color: Colors.grey,
+                    width: 1,
+                  ),
                 ),
               ),
             ),
@@ -78,7 +84,10 @@ class Messages extends StatelessWidget {
           Expanded(
             child: ListView.separated(
               itemCount: messages.length,
-              separatorBuilder: (_, __) => const Divider(height: 1),
+              separatorBuilder: (_, __) => const Divider(
+                height: 1,
+                color: Colors.black,
+              ),
               itemBuilder: (context, index) {
                 final msg = messages[index];
                 return ListTile(

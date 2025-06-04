@@ -16,10 +16,6 @@ class _CalendarState extends State<Calendar> {
 
   final DatabaseMethods _database = DatabaseMethods();
 
-// A list of appointment details for the currently selected date
-  // List<Map<String, dynamic>> _bookings = [];
-  // bool _loading = false;
-
   String _formatDate(DateTime date) {
     return "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
   }
@@ -36,7 +32,14 @@ class _CalendarState extends State<Calendar> {
         _selectedDay != null ? _formatDate(_selectedDay!) : '';
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Booking Calendar')),
+      appBar: AppBar(
+          backgroundColor: Colors.teal.shade100,
+          title: const Text(
+            'CALENDER',
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          ),
+          centerTitle: true,
+          automaticallyImplyLeading: false),
       body: Padding(
         padding: const EdgeInsets.all(12),
         child: Column(
@@ -56,15 +59,38 @@ class _CalendarState extends State<Calendar> {
               },
               calendarFormat: CalendarFormat.month,
               headerStyle: const HeaderStyle(
-                formatButtonVisible: false,
+                formatButtonVisible: false, // hides the format toggle button
                 titleCentered: true,
+                titleTextStyle: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+              ),
+              calendarStyle: CalendarStyle(
+                selectedDecoration: BoxDecoration(
+                  color: Colors.teal,
+                  shape: BoxShape.circle,
+                ),
+                todayDecoration: BoxDecoration(
+                  color: Colors.teal.shade100,
+                  shape: BoxShape.circle,
+                ),
+                selectedTextStyle: const TextStyle(color: Colors.white),
+                todayTextStyle: const TextStyle(color: Colors.black),
               ),
             ),
             const SizedBox(height: 20),
+            const Divider(thickness: 1, color: Colors.teal),
             Text(
-              'Booking Details',
-              style: Theme.of(context).textTheme.titleLarge,
+              'Appointment List',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
             ),
+            const Divider(thickness: 0.8, color: Colors.teal),
             const SizedBox(height: 10),
 
             // The appointment list is displayed only when the selected date is not empty
@@ -82,7 +108,9 @@ class _CalendarState extends State<Calendar> {
                         }
                         if (!snapshot.hasData || snapshot.data!.isEmpty) {
                           return const Center(
-                              child: Text("No bookings for selected date."));
+                              child: Text("No bookings for Selected Date.",
+                                  style: TextStyle(
+                                      color: Colors.black, fontSize: 18)));
                         }
 
                         final bookings = snapshot.data!;
@@ -91,10 +119,22 @@ class _CalendarState extends State<Calendar> {
                           itemBuilder: (context, index) {
                             final booking = bookings[index];
                             return ListTile(
-                              leading: const Icon(Icons.medical_services),
-                              title: Text("Time: ${booking['timeSlot']}"),
+                              leading: const Icon(
+                                Icons.medical_services,
+                                color: Colors.teal,
+                              ),
+                              title: Text(
+                                "Time: ${booking['timeSlot']}",
+                                style: TextStyle(
+                                    fontSize: 18,
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.w500),
+                              ),
                               subtitle: Text(
-                                  "Location: ${booking['location']}\nSpecialist: ${booking['specialist']}"),
+                                "Location: ${booking['location']}\nSpecialist: ${booking['specialist']}",
+                                style: TextStyle(
+                                    fontSize: 16, color: Colors.black),
+                              ),
                               isThreeLine: true,
                               onTap: () {
                                 Navigator.push(
