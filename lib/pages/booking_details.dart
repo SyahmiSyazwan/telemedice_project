@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:telemedice_project/pages/bottomNav.dart';
+import 'package:telemedice_project/services/jitsi_service.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:jitsi_meet_wrapper/jitsi_meet_wrapper.dart';
 
 class BookingDetails extends StatefulWidget {
   final String bookingId;
@@ -324,24 +324,13 @@ class _BookingDetailsState extends State<BookingDetails> {
   }
 
   void _joinMeeting() async {
-    try {
-      await JitsiMeetWrapper.joinMeeting(
-        options: JitsiMeetingOptions(
-          roomNameOrUrl: widget.bookingId,
-          subject: "Telemedicine Appointment with Dr. ${widget.doctorName}",
-          userDisplayName: "Patient",
-          configOverrides: {
-            "startWithAudioMuted": false,
-            "startWithVideoMuted": false,
-          },
-        ),
-      );
-    } catch (e) {
-      print("Error joining meeting: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Failed to join meeting: $e")),
-      );
-    }
+    final jitsiService = JitsiService();
+    await jitsiService.joinMeeting(
+      roomName: "booking_${widget.bookingId}", // make it dynamic if needed
+      userName: "Flutter User", // optionally replace with logged-in user's name
+      email: "user@example.com",
+      subject: "Appointment with Dr. ${widget.doctorName}",
+    );
   }
 
   Widget _buildInfoTile(IconData icon, String title, String subtitle,
