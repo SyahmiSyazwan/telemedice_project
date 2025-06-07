@@ -39,7 +39,7 @@ class Onboard extends StatelessWidget {
                         ),
                         SizedBox(height: 4),
                         Text(
-                          'Healthcare at your fingertips -\ntap and connect',
+                          'Healthcare At Your Fingertips -\nTap And Connect',
                           style: TextStyle(
                             fontSize: 14,
                             color: Colors.black,

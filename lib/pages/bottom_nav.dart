@@ -6,7 +6,6 @@ import 'package:telemedice_project/pages/calendar.dart';
 import 'package:telemedice_project/pages/home.dart';
 import 'package:telemedice_project/pages/message.dart';
 import 'package:telemedice_project/pages/profile.dart';
-import 'package:telemedice_project/pages/search.dart';
 
 Future<String?> getUserRole() async {
   final uid = FirebaseAuth.instance.currentUser?.uid;
@@ -29,7 +28,6 @@ class _BottomNavBarState extends State<BottomNavBar> {
   int currentTabIndex = 0;
 
   late Home homepage;
-  late Search search;
   late Calendar calendar;
   late Messages messages;
   late Profile profile;
@@ -38,7 +36,6 @@ class _BottomNavBarState extends State<BottomNavBar> {
   void initState() {
     super.initState();
     homepage = Home();
-    search = Search();
     calendar = Calendar();
     messages = Messages();
     profile = Profile();
@@ -60,20 +57,18 @@ class _BottomNavBarState extends State<BottomNavBar> {
         List<Widget> items;
 
         if (role == 'Patient') {
-          pages = [homepage, search, calendar, messages, profile];
+          pages = [homepage, calendar, messages, profile];
           items = const [
             Icon(Icons.home_outlined, color: Colors.white),
-            Icon(Icons.search_outlined, color: Colors.white),
             Icon(Icons.calendar_today_outlined, color: Colors.white),
             Icon(Icons.message_outlined, color: Colors.white),
             Icon(Icons.person_outline, color: Colors.white),
           ];
         } else if (role == 'Doctor') {
-          pages = [homepage, calendar, messages, profile]; // No search
+          pages = [homepage, calendar, profile];
           items = const [
             Icon(Icons.home_outlined, color: Colors.white),
             Icon(Icons.calendar_today_outlined, color: Colors.white),
-            Icon(Icons.message_outlined, color: Colors.white),
             Icon(Icons.person_outline, color: Colors.white),
           ];
         } else {

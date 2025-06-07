@@ -104,7 +104,7 @@ class _SignupState extends State<Signup> {
                           ),
                         ),
                         Text(
-                          'Healthcare at your fingertips -\ntap and connect',
+                          'Healthcare At Your Fingertips -\nTap And Connect',
                           style: TextStyle(fontSize: 12, color: Colors.black),
                         ),
                       ],
