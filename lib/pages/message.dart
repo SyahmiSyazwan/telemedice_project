@@ -13,7 +13,7 @@ class _MessagePageState extends State<Messages> {
   final ScrollController _scrollController = ScrollController();
 
   final AIChatService aiChat = AIChatService(
-      ""); //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
+      "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");
 
   final List<Map<String, String>> messages = []; // List of {sender, message}
 
@@ -48,13 +48,37 @@ class _MessagePageState extends State<Messages> {
   }
 
   void _scrollToBottom() {
-    Future.delayed(Duration(milliseconds: 100), () {
+    Future.delayed(const Duration(milliseconds: 100), () {
       _scrollController.animateTo(
         _scrollController.position.maxScrollExtent,
-        duration: Duration(milliseconds: 300),
+        duration: const Duration(milliseconds: 300),
         curve: Curves.easeOut,
       );
     });
+  }
+
+  Widget _buildAIMessage(String message) {
+    const disclaimer =
+        "*This is an AI-generated medical suggestion. Please consult a licensed healthcare professional before making any decisions.*";
+
+    if (!message.contains(disclaimer)) {
+      return Text(message, style: const TextStyle(fontSize: 16));
+    }
+
+    final reply = message.replaceAll(disclaimer, '').trim();
+
+    return RichText(
+      text: TextSpan(
+        style: const TextStyle(fontSize: 16, color: Colors.black),
+        children: [
+          TextSpan(text: "$reply\n\n"),
+          const TextSpan(
+            text: disclaimer,
+            style: TextStyle(color: Colors.red),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -63,7 +87,7 @@ class _MessagePageState extends State<Messages> {
       appBar: AppBar(
         backgroundColor: Colors.teal.shade100,
         title: const Text(
-          'MESSAGES',
+          'AI VIRTUAL DOCTOR',
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
@@ -93,10 +117,12 @@ class _MessagePageState extends State<Messages> {
                       color: isUser ? Colors.teal[200] : Colors.grey[300],
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Text(
-                      msg['message']!,
-                      style: const TextStyle(fontSize: 16),
-                    ),
+                    child: isUser
+                        ? Text(
+                            msg['message']!,
+                            style: const TextStyle(fontSize: 16),
+                          )
+                        : _buildAIMessage(msg['message']!),
                   ),
                 );
               },
