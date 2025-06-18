@@ -1,137 +1,160 @@
 import 'package:flutter/material.dart';
+import '../services/ai_chat_service.dart';
 
-class Message {
-  final String avatarUrl;
-  final String name;
-  final String lastMessage;
-  final String time;
-  final bool isUnread;
+class Messages extends StatefulWidget {
+  const Messages({super.key});
 
-  Message({
-    required this.avatarUrl,
-    required this.name,
-    required this.lastMessage,
-    required this.time,
-    this.isUnread = false,
-  });
+  @override
+  State<Messages> createState() => _MessagePageState();
 }
 
-class Messages extends StatelessWidget {
-  Messages({super.key});
+class _MessagePageState extends State<Messages> {
+  final TextEditingController _controller = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
 
-  final List<Message> messages = [
-    Message(
-      avatarUrl: 'https://randomuser.me/api/portraits/men/1.jpg',
-      name: 'Dr Frank Ufondu',
-      lastMessage: "It's always my pleasure",
-      time: '9:41 AM',
-      isUnread: true,
-    ),
-    Message(
-      avatarUrl: 'https://randomuser.me/api/portraits/men/2.jpg',
-      name: 'Support',
-      lastMessage: 'Your issue has been escalated...',
-      time: 'Wed',
-    ),
-    Message(
-      avatarUrl: 'https://randomuser.me/api/portraits/women/3.jpg',
-      name: 'Dr. Eze',
-      lastMessage: "When you're free come...",
-      time: '19/06/2022',
-    ),
-    // Add more message samples...
-  ];
+  final AIChatService aiChat = AIChatService(
+      "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");
+
+  final List<Map<String, String>> messages = []; // List of {sender, message}
+
+  bool isLoading = false;
+
+  void _sendMessage() async {
+    final message = _controller.text.trim();
+    if (message.isEmpty) return;
+
+    setState(() {
+      messages.add({'sender': 'user', 'message': message});
+      _controller.clear();
+      isLoading = true;
+    });
+
+    try {
+      final response = await aiChat.sendMessage(message);
+      setState(() {
+        messages.add({'sender': 'ai', 'message': response});
+      });
+
+      _scrollToBottom();
+    } catch (e) {
+      setState(() {
+        messages.add({'sender': 'ai', 'message': '⚠️ Error: $e'});
+      });
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  void _scrollToBottom() {
+    Future.delayed(const Duration(milliseconds: 100), () {
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    });
+  }
+
+  Widget _buildAIMessage(String message) {
+    const disclaimer =
+        "*This is an AI-generated medical suggestion. Please consult a licensed healthcare professional before making any decisions.*";
+
+    if (!message.contains(disclaimer)) {
+      return Text(message, style: const TextStyle(fontSize: 16));
+    }
+
+    final reply = message.replaceAll(disclaimer, '').trim();
+
+    return RichText(
+      text: TextSpan(
+        style: const TextStyle(fontSize: 16, color: Colors.black),
+        children: [
+          TextSpan(text: "$reply\n\n"),
+          const TextSpan(
+            text: disclaimer,
+            style: TextStyle(color: Colors.red),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.teal.shade100,
-        title: const Text('MESSAGES',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.black,
-            )),
+        title: const Text(
+          'AI VIRTUAL DOCTOR',
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
+          ),
+        ),
         automaticallyImplyLeading: false,
         centerTitle: true,
       ),
       body: Column(
         children: [
-          // Search bar
-          Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: TextField(
-              decoration: InputDecoration(
-                hintText: 'Search',
-                prefixIcon: const Icon(Icons.search),
-                filled: true,
-                fillColor: Colors.white,
-                contentPadding:
-                    const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(15),
-                  borderSide: const BorderSide(
-                    color: Colors.grey,
-                    width: 1,
-                  ),
-                ),
-              ),
-            ),
-          ),
-
-          // Message list
           Expanded(
-            child: ListView.separated(
+            child: ListView.builder(
+              controller: _scrollController,
+              padding: const EdgeInsets.all(16),
               itemCount: messages.length,
-              separatorBuilder: (_, __) => const Divider(
-                height: 1,
-                color: Colors.black,
-              ),
               itemBuilder: (context, index) {
                 final msg = messages[index];
-                return ListTile(
-                  leading: Stack(
-                    children: [
-                      CircleAvatar(
-                        radius: 25,
-                        backgroundImage: NetworkImage(msg.avatarUrl),
-                      ),
-                      if (msg.isUnread)
-                        Positioned(
-                          right: 0,
-                          top: 0,
-                          child: Container(
-                            width: 12,
-                            height: 12,
-                            decoration: BoxDecoration(
-                              color: Colors.blue,
-                              shape: BoxShape.circle,
-                              border: Border.all(color: Colors.white, width: 2),
-                            ),
-                          ),
-                        ),
-                    ],
+                final isUser = msg['sender'] == 'user';
+                return Container(
+                  alignment:
+                      isUser ? Alignment.centerRight : Alignment.centerLeft,
+                  margin: const EdgeInsets.symmetric(vertical: 6),
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: isUser ? Colors.teal[200] : Colors.grey[300],
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: isUser
+                        ? Text(
+                            msg['message']!,
+                            style: const TextStyle(fontSize: 16),
+                          )
+                        : _buildAIMessage(msg['message']!),
                   ),
-                  title: Text(
-                    msg.name,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  subtitle: Text(
-                    msg.lastMessage,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(color: Colors.black54),
-                  ),
-                  trailing: Text(
-                    msg.time,
-                    style: const TextStyle(fontSize: 12, color: Colors.black54),
-                  ),
-                  onTap: () {
-                    // Navigate to detailed chat page or do other action
-                  },
                 );
               },
+            ),
+          ),
+          if (isLoading)
+            const Padding(
+              padding: EdgeInsets.only(bottom: 12),
+              child: CircularProgressIndicator(),
+            ),
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _controller,
+                    textInputAction: TextInputAction.send,
+                    onSubmitted: (_) => _sendMessage(),
+                    decoration: const InputDecoration(
+                      labelText: "Ask A Question",
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                IconButton(
+                  icon: const Icon(Icons.send),
+                  color: Colors.teal,
+                  onPressed: isLoading ? null : _sendMessage,
+                )
+              ],
             ),
           ),
         ],

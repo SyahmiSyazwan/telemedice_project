@@ -114,7 +114,7 @@ class _HomeState extends State<Home> {
                     fontSize: 22,
                     fontWeight: FontWeight.bold)),
             const Text("What do you want to do today?",
-                style: TextStyle(color: Colors.black, fontSize: 14)),
+                style: TextStyle(color: Colors.black, fontSize: 16)),
           ],
         ),
       ),
@@ -139,7 +139,7 @@ class _HomeState extends State<Home> {
                 if (!snapshot.hasData || snapshot.data == null) {
                   return Card(
                     shape: RoundedRectangleBorder(
-                      side: BorderSide(color: Colors.blue.shade100),
+                      side: BorderSide(color: Colors.black),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     elevation: 0,
@@ -147,8 +147,13 @@ class _HomeState extends State<Home> {
                       leading:
                           const Icon(Icons.calendar_today, color: Colors.green),
                       title: const Text(
-                          "You currently don't have an appointment scheduled."),
-                      subtitle: const Text("Book an appointment today!"),
+                        "You Currently Don't Have An Appointment Scheduled",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      subtitle: const Text(
+                        "Book An Appointment Today!",
+                        style: TextStyle(color: Colors.black),
+                      ),
                       trailing: const Icon(
                         Icons.arrow_forward_ios,
                         size: 20,
@@ -166,7 +171,7 @@ class _HomeState extends State<Home> {
                 final appointment = snapshot.data!;
                 return Card(
                   shape: RoundedRectangleBorder(
-                    side: BorderSide(color: Colors.blue.shade100),
+                    side: BorderSide(color: Colors.black),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   elevation: 0,
@@ -174,9 +179,9 @@ class _HomeState extends State<Home> {
                     leading:
                         const Icon(Icons.calendar_today, color: Colors.green),
                     title: Text(
-                      "Appointment with ${appointment['doctorName']} \n${appointment['date']} at ${appointment['timeSlot']}",
+                      "Appointment With ${appointment['doctorName']} At \n${appointment['date']} ${appointment['timeSlot']}",
                       style: TextStyle(
-                          color: Colors.black, fontWeight: FontWeight.w500),
+                          color: Colors.red, fontWeight: FontWeight.w500),
                       textAlign: TextAlign.justify,
                     ),
                     subtitle: Text(
@@ -207,7 +212,7 @@ class _HomeState extends State<Home> {
               },
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 30),
 
             const Text("GENERAL NEEDS",
                 style: TextStyle(
@@ -216,7 +221,7 @@ class _HomeState extends State<Home> {
                     color: Colors.black)),
             const SizedBox(height: 5),
             const Text(
-              "Get medical advice, prescriptions, test & referrals by video appointment with our doctors",
+              "Access Quality Care Whether By Video Or At A clinic For Your General Health Needs.",
               style: TextStyle(
                 color: Colors.black,
                 fontSize: 16,
@@ -229,9 +234,9 @@ class _HomeState extends State<Home> {
             _buildActionCard(
               icon: Icons.video_call,
               iconColor: Colors.purple,
-              title: "Book an Appointment",
+              title: "Book An Appointment",
               subtitle:
-                  "Choose a Primary Care Doctor and complete your first video appointment.",
+                  "Connect With A Doctor For A Virtual Or In-Person Visit At Your Convenience",
               onTap: () {
                 Navigator.push(
                   context,
@@ -239,20 +244,12 @@ class _HomeState extends State<Home> {
                 );
               },
             ),
-            /*const SizedBox(height: 10),
-            _buildActionCard(
-              icon: Icons.medical_services_outlined,
-              iconColor: Colors.blue,
-              title: "Online Consultation with Doctor",
-              subtitle: "Get medical advice, prescriptions, test & more.",
-              onTap: () {},
-            ),*/
             const SizedBox(height: 10),
             _buildActionCard(
               icon: Icons.favorite_border,
               iconColor: Colors.red,
               title: "Medical Records",
-              subtitle: "Chat by video with the next available doctor.",
+              subtitle: "Your Complete Health Records In One Place.",
               onTap: () {},
             ),
             const SizedBox(height: 10),
@@ -287,7 +284,7 @@ class _HomeState extends State<Home> {
   }) {
     return Card(
       shape: RoundedRectangleBorder(
-          side: BorderSide(color: Colors.grey.shade300),
+          side: BorderSide(color: Colors.black),
           borderRadius: BorderRadius.circular(10)),
       elevation: 0,
       child: ListTile(
@@ -300,6 +297,7 @@ class _HomeState extends State<Home> {
         subtitle: Text(
           subtitle,
           style: TextStyle(color: Colors.black),
+          textAlign: TextAlign.justify,
         ),
         trailing: const Icon(Icons.arrow_forward_ios, size: 20),
         onTap: onTap,

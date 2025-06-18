@@ -95,7 +95,7 @@ class _CalendarState extends State<Calendar> {
 
             // The appointment list is displayed only when the selected date is not empty
             _selectedDay == null
-                ? const Text('Please select a date.')
+                ? const Text('Please Select A Date.')
                 : Expanded(
                     child: StreamBuilder<List<Map<String, dynamic>>>(
                       stream:
@@ -108,7 +108,7 @@ class _CalendarState extends State<Calendar> {
                         }
                         if (!snapshot.hasData || snapshot.data!.isEmpty) {
                           return const Center(
-                              child: Text("No bookings for Selected Date.",
+                              child: Text("No Bookings For Selected Date.",
                                   style: TextStyle(
                                       color: Colors.black, fontSize: 18)));
                         }

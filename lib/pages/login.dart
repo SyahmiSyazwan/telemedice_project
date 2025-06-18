@@ -55,7 +55,7 @@ class _LoginState extends State<Login> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 40),
+                const SizedBox(height: 100),
 
                 // Centered Logo
                 Center(
@@ -79,7 +79,7 @@ class _LoginState extends State<Login> {
                             ),
                           ),
                           Text(
-                            'Healthcare at your fingertips -\ntap and connect',
+                            'Healthcare At Your Fingertips -\nTap And Connect',
                             style: TextStyle(fontSize: 12, color: Colors.black),
                           ),
                         ],
@@ -87,7 +87,7 @@ class _LoginState extends State<Login> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 30),
+                const SizedBox(height: 40),
 
                 // Login Form Container
                 Material(
