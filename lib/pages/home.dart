@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:telemedice_project/pages/appointment.dart';
 import 'package:telemedice_project/pages/booking_details.dart';
+import 'package:telemedice_project/pages/medical_record_upload_page.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -15,24 +16,34 @@ class _HomeState extends State<Home> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   String? userName;
+  String? userRole;
 
   @override
   void initState() {
     super.initState();
-    fetchUserName();
+    fetchUserDetails();
   }
 
-  Future<void> fetchUserName() async {
-    final userId = _auth.currentUser?.uid;
-    if (userId == null) return;
+  Future<void> fetchUserDetails() async {
+  final userId = _auth.currentUser?.uid;
+  print("Logged-in User ID: $userId"); // Log the user ID
+  if (userId == null) return;
 
-    final userDoc = await _firestore.collection('users').doc(userId).get();
-    if (userDoc.exists) {
-      setState(() {
-        userName = userDoc.data()?['Name'] ?? 'User';
-      });
-    }
+  final userDoc = await _firestore.collection('users').doc(userId).get();
+  if (userDoc.exists) {
+    final userData = userDoc.data();
+    print("Firestore Document Data: $userData"); // Log the entire document data
+
+    setState(() {
+      userName = userData?['Name'] ?? 'User'; // Extract Name
+      userRole = userData?['Role'] ?? 'Patient'; // Extract Role
+      print("User Role: $userRole"); // Log the user role
+      print("User Name: $userName"); // Log the user name
+    });
+  } else {
+    print("User document not found in Firestore.");
   }
+}
 
   Future<Map<String, dynamic>?> _getUpcomingAppointment() async {
     final userId = _auth.currentUser?.uid;
@@ -241,6 +252,23 @@ class _HomeState extends State<Home> {
               subtitle: "Your Complete Health Records In One Place.",
               onTap: () {},
             ),
+            const SizedBox(height: 10),
+            // Conditionally render the "Upload Medical Records" card
+            if (userRole == 'Doctor') ...[
+              _buildActionCard(
+                icon: Icons.medical_services_outlined,
+                iconColor: Colors.blue,
+                title: "Upload Medical Records",
+                subtitle: "Diagnose and treat your medical conditions.",
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const MedicalRecordUploadPage()),
+                  );
+                },
+              ),
+            ],
           ],
         ),
       ),
