@@ -25,9 +25,10 @@ dependencies:
   geolocator: ^10.1.0
   google_maps_webservice: ^0.0.20-nullsafety
   table_calendar: ^3.0.9
-  url_launcher: ^6.2.5
+  url_launcher: ^6.3.1
   http: ^0.13.6
   file_picker: ^10.1.9   # For picking documents
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
