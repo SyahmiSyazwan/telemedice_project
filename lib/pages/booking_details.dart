@@ -315,7 +315,7 @@ class _BookingDetailsState extends State<BookingDetails> {
 
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(
-          builder: (context) => BottomNavBar(initialIndex: 2),
+          builder: (context) => BottomNavBar(initialIndex: 1),
         ),
         (route) => false,
       );

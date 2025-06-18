@@ -235,7 +235,7 @@ class _AppointmentBookingState extends State<AppointmentBooking> {
                             Navigator.of(context).pushAndRemoveUntil(
                               MaterialPageRoute(
                                 builder: (context) =>
-                                    BottomNavBar(initialIndex: 2),
+                                    BottomNavBar(initialIndex: 1),
                               ),
                               (route) => false,
                             );
