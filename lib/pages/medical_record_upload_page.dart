@@ -1,29 +1,76 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
-import 'package:image_picker/image_picker.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 class MedicalRecordUploadPage extends StatefulWidget {
   const MedicalRecordUploadPage({Key? key}) : super(key: key);
 
   @override
-  State<MedicalRecordUploadPage> createState() => _MedicalRecordUploadPageState();
+  State<MedicalRecordUploadPage> createState() =>
+      _MedicalRecordUploadPageState();
 }
 
 class _MedicalRecordUploadPageState extends State<MedicalRecordUploadPage> {
   final _formKey = GlobalKey<FormState>();
   File? _selectedFile;
   String _selectedFileName = '';
-  
+  bool _isUploading = false;
+
   // Form fields
+  final TextEditingController _patientEmailController = TextEditingController();
   final TextEditingController _patientNameController = TextEditingController();
   final TextEditingController _patientICController = TextEditingController();
   final TextEditingController _diagnosisController = TextEditingController();
   final TextEditingController _medicationController = TextEditingController();
   final TextEditingController _notesController = TextEditingController();
-  
-  // Toggle between upload and form
+
   bool _showUploadForm = true;
+
+  // For autocomplete
+  List<Map<String, String>> userList = []; // [{'email': ..., 'name': ...}]
+  List<String> emailList = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUsers();
+  }
+
+  Future<void> _fetchUsers() async {
+  try {
+    final snapshot = await FirebaseFirestore.instance.collection('users').get();
+    if (snapshot.docs.isEmpty) {
+      print('No users found in the database.');
+    } else {
+      print('Fetched ${snapshot.docs.length} users from the database.');
+      for (var doc in snapshot.docs) {
+        print('User doc: ${doc.data()}');
+      }
+    }
+    final users = snapshot.docs.map((doc) {
+      final data = doc.data();
+      return {
+        'email': data['Email']?.toString() ?? '',
+        'name': data['Name']?.toString() ?? '',
+      };
+    }).where((user) => user['email']!.isNotEmpty).toList();
+
+    setState(() {
+      userList = users;
+      emailList = users.map((u) => u['email']!).toList();
+    });
+  } catch (e) {
+    print('Error fetching users from Firestore: $e');
+  }
+}
+
+  void _onEmailSelected(String? selectedEmail) {
+    final user = userList.firstWhere((u) => u['email'] == selectedEmail,
+        orElse: () => {'name': ''});
+    _patientNameController.text = user['name'] ?? '';
+  }
 
   Future<void> _pickFile() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
@@ -39,46 +86,92 @@ class _MedicalRecordUploadPageState extends State<MedicalRecordUploadPage> {
     }
   }
 
-  void _uploadFile() {
-    // Implement your file upload logic here
-    if (_selectedFile != null) {
+  Future<void> _uploadFile() async {
+    if (_selectedFile == null || _patientEmailController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('File upload started')),
+        const SnackBar(
+            content: Text('Please select a file and enter patient email')),
       );
-      
-      // Mock successful upload after 2 seconds
-      Future.delayed(const Duration(seconds: 2), () {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Medical record uploaded successfully')),
-        );
-        
-        // Clear selected file after upload
-        setState(() {
-          _selectedFile = null;
-          _selectedFileName = '';
-        });
+      return;
+    }
+
+    setState(() {
+      _isUploading = true;
+    });
+
+    try {
+      // Upload file to Firebase Storage
+      final storageRef = FirebaseStorage.instance
+          .ref()
+          .child('medical_records')
+          .child('${DateTime.now().millisecondsSinceEpoch}_$_selectedFileName');
+      final uploadTask = storageRef.putFile(_selectedFile!);
+      final snapshot = await uploadTask;
+      final downloadUrl = await snapshot.ref.getDownloadURL();
+
+      // Save metadata to Firestore
+      await FirebaseFirestore.instance.collection('medical_records').add({
+        'patientEmail': _patientEmailController.text.trim(),
+        'patientName': _patientNameController.text.trim(),
+        'fileUrl': downloadUrl,
+        'fileName': _selectedFileName,
+        'uploadedAt': FieldValue.serverTimestamp(),
+        'type': 'file',
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Medical record uploaded successfully')),
+      );
+      setState(() {
+        _selectedFile = null;
+        _selectedFileName = '';
+        _patientEmailController.clear();
+        _patientNameController.clear();
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Upload failed: $e')),
+      );
+    } finally {
+      setState(() {
+        _isUploading = false;
       });
     }
   }
 
-  void _submitForm() {
-    if (_formKey.currentState!.validate()) {
+  Future<void> _submitForm() async {
+    if (!_formKey.currentState!.validate()) return;
+    setState(() {
+      _isUploading = true;
+    });
+
+    try {
+      await FirebaseFirestore.instance.collection('medical_records').add({
+        'patientEmail': _patientEmailController.text.trim(),
+        'patientName': _patientNameController.text.trim(),
+        'patientIC': _patientICController.text.trim(),
+        'diagnosis': _diagnosisController.text.trim(),
+        'medication': _medicationController.text.trim(),
+        'notes': _notesController.text.trim(),
+        'createdAt': FieldValue.serverTimestamp(),
+        'type': 'form',
+      });
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Submitting medical record...')),
+        const SnackBar(content: Text('Medical record created successfully')),
       );
-      
-      // Mock successful submission after 2 seconds
-      Future.delayed(const Duration(seconds: 2), () {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Medical record created successfully')),
-        );
-        
-        // Clear form fields
-        _patientNameController.clear();
-        _patientICController.clear();
-        _diagnosisController.clear();
-        _medicationController.clear();
-        _notesController.clear();
+      _patientEmailController.clear();
+      _patientNameController.clear();
+      _patientICController.clear();
+      _diagnosisController.clear();
+      _medicationController.clear();
+      _notesController.clear();
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Submission failed: $e')),
+      );
+    } finally {
+      setState(() {
+        _isUploading = false;
       });
     }
   }
@@ -92,7 +185,7 @@ class _MedicalRecordUploadPageState extends State<MedicalRecordUploadPage> {
         color: Colors.white,
         child: Stack(
           children: [
-            // Background design elements (similar to prescription page)
+            // Background design elements
             Positioned(
               left: -79,
               top: -66,
@@ -117,7 +210,7 @@ class _MedicalRecordUploadPageState extends State<MedicalRecordUploadPage> {
                 ),
               ),
             ),
-            
+
             // Page Content
             SingleChildScrollView(
               child: Padding(
@@ -144,9 +237,9 @@ class _MedicalRecordUploadPageState extends State<MedicalRecordUploadPage> {
                         ),
                       ],
                     ),
-                    
+
                     SizedBox(height: 30),
-                    
+
                     // Title
                     Center(
                       child: Text(
@@ -160,9 +253,9 @@ class _MedicalRecordUploadPageState extends State<MedicalRecordUploadPage> {
                         ),
                       ),
                     ),
-                    
+
                     SizedBox(height: 20),
-                    
+
                     // Toggle between upload and form
                     Center(
                       child: SegmentedButton<bool>(
@@ -185,7 +278,8 @@ class _MedicalRecordUploadPageState extends State<MedicalRecordUploadPage> {
                           });
                         },
                         style: ButtonStyle(
-                          backgroundColor: MaterialStateProperty.resolveWith<Color>(
+                          backgroundColor:
+                              MaterialStateProperty.resolveWith<Color>(
                             (Set<MaterialState> states) {
                               if (states.contains(MaterialState.selected)) {
                                 return const Color(0xFF8FE1D7);
@@ -196,11 +290,13 @@ class _MedicalRecordUploadPageState extends State<MedicalRecordUploadPage> {
                         ),
                       ),
                     ),
-                    
+
                     SizedBox(height: 40),
-                    
+
                     // File Upload Widget or Form
-                    _showUploadForm ? _buildFileUploadWidget() : _buildMedicalRecordForm(),
+                    _showUploadForm
+                        ? _buildFileUploadWidget()
+                        : _buildMedicalRecordForm(),
                   ],
                 ),
               ),
@@ -210,11 +306,25 @@ class _MedicalRecordUploadPageState extends State<MedicalRecordUploadPage> {
       ),
     );
   }
-  
+
   Widget _buildFileUploadWidget() {
+    // Add autocomplete email
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
+        _buildEmailAutocompleteField(),
+        SizedBox(height: 16),
+        _buildFormField(
+          label: 'Patient Name',
+          controller: _patientNameController,
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Please enter patient name';
+            }
+            return null;
+          },
+        ),
+        SizedBox(height: 20),
         Container(
           width: double.infinity,
           height: 180,
@@ -286,12 +396,12 @@ class _MedicalRecordUploadPageState extends State<MedicalRecordUploadPage> {
                   ],
                 ),
         ),
-        
+
         SizedBox(height: 40),
-        
+
         // Upload button
         ElevatedButton(
-          onPressed: _selectedFile != null ? _uploadFile : null,
+          onPressed: _isUploading ? null : _uploadFile,
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xFF8FE1D7),
             minimumSize: Size(double.infinity, 50),
@@ -299,26 +409,30 @@ class _MedicalRecordUploadPageState extends State<MedicalRecordUploadPage> {
               borderRadius: BorderRadius.circular(8),
             ),
           ),
-          child: Text(
-            'Upload Medical Record',
-            style: TextStyle(
-              color: Colors.black,
-              fontSize: 16,
-              fontFamily: 'Poppins',
-              fontWeight: FontWeight.w500,
-            ),
-          ),
+          child: _isUploading
+              ? CircularProgressIndicator()
+              : Text(
+                  'Upload Medical Record',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 16,
+                    fontFamily: 'Poppins',
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
         ),
       ],
     );
   }
-  
+
   Widget _buildMedicalRecordForm() {
     return Form(
       key: _formKey,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          _buildEmailAutocompleteField(),
+          SizedBox(height: 16),
           _buildFormField(
             label: 'Patient Name',
             controller: _patientNameController,
@@ -329,9 +443,7 @@ class _MedicalRecordUploadPageState extends State<MedicalRecordUploadPage> {
               return null;
             },
           ),
-          
           SizedBox(height: 16),
-          
           _buildFormField(
             label: 'Patient IC / Passport Number',
             controller: _patientICController,
@@ -342,9 +454,7 @@ class _MedicalRecordUploadPageState extends State<MedicalRecordUploadPage> {
               return null;
             },
           ),
-          
           SizedBox(height: 16),
-          
           _buildFormField(
             label: 'Diagnosis',
             controller: _diagnosisController,
@@ -356,9 +466,7 @@ class _MedicalRecordUploadPageState extends State<MedicalRecordUploadPage> {
               return null;
             },
           ),
-          
           SizedBox(height: 16),
-          
           _buildFormField(
             label: 'Medication Required',
             controller: _medicationController,
@@ -370,21 +478,16 @@ class _MedicalRecordUploadPageState extends State<MedicalRecordUploadPage> {
               return null;
             },
           ),
-          
           SizedBox(height: 16),
-          
           _buildFormField(
             label: 'Additional Notes',
             controller: _notesController,
             maxLines: 4,
-            validator: null, // Optional field
+            validator: null,
           ),
-          
           SizedBox(height: 40),
-          
-          // Submit form button
           ElevatedButton(
-            onPressed: _submitForm,
+            onPressed: _isUploading ? null : _submitForm,
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF8FE1D7),
               minimumSize: Size(double.infinity, 50),
@@ -392,21 +495,78 @@ class _MedicalRecordUploadPageState extends State<MedicalRecordUploadPage> {
                 borderRadius: BorderRadius.circular(8),
               ),
             ),
-            child: Text(
-              'Create Medical Record',
-              style: TextStyle(
-                color: Colors.black,
-                fontSize: 16,
-                fontFamily: 'Poppins',
-                fontWeight: FontWeight.w500,
-              ),
-            ),
+            child: _isUploading
+                ? CircularProgressIndicator()
+                : Text(
+                    'Create Medical Record',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 16,
+                      fontFamily: 'Poppins',
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
           ),
         ],
       ),
     );
   }
-  
+
+  Widget _buildEmailAutocompleteField() {
+  return Autocomplete<String>(
+    optionsBuilder: (TextEditingValue textEditingValue) {
+      if (textEditingValue.text == '') {
+        return const Iterable<String>.empty();
+      }
+      return emailList.where((String option) {
+        return option.toLowerCase().contains(textEditingValue.text.toLowerCase());
+      });
+    },
+    onSelected: (String selection) {
+      _patientEmailController.text = selection;
+      _onEmailSelected(selection); // This autofills the name
+    },
+    fieldViewBuilder: (context, controller, focusNode, onEditingComplete) {
+      // Ensure controller stays in sync with the main one
+      controller.text = _patientEmailController.text;
+      controller.selection = TextSelection.collapsed(offset: controller.text.length);
+
+      return TextFormField(
+        controller: controller,
+        focusNode: focusNode,
+        decoration: InputDecoration(
+          labelText: 'Patient Email',
+          filled: true,
+          fillColor: const Color(0xFFE9F9F7),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: BorderSide(color: Colors.grey.shade300),
+          ),
+        ),
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'Please enter patient email';
+          }
+          if (!RegExp(r'.+@.+\..+').hasMatch(value)) {
+            return 'Enter a valid email';
+          }
+          return null;
+        },
+        onEditingComplete: onEditingComplete,
+        onChanged: (val) {
+          _patientEmailController.text = val;
+          // Check if the entered email exactly matches one in the list
+          final user = userList.firstWhere(
+            (u) => u['email'] == val,
+            orElse: () => {'name': ''},
+          );
+          _patientNameController.text = user['name'] ?? '';
+        },
+      );
+    },
+  );
+}
+
   Widget _buildFormField({
     required String label,
     required TextEditingController controller,
@@ -450,58 +610,5 @@ class _MedicalRecordUploadPageState extends State<MedicalRecordUploadPage> {
         ),
       ],
     );
-  }
-  
-  Widget _buildNavItem(String label, bool isActive, Color iconColor, Color textColor) {
-    return Expanded(
-      child: Container(
-        width: 86,
-        height: 49,
-        decoration: ShapeDecoration(
-          color: const Color(0xFF8FE1D7),
-          shape: RoundedRectangleBorder(side: BorderSide(width: 1)),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            SizedBox(height: 3),
-            Icon(
-              _getIconForLabel(label),
-              size: 24,
-              color: iconColor,
-            ),
-            SizedBox(height: 2),
-            Text(
-              label,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: textColor,
-                fontSize: 12,
-                fontFamily: 'GT Walsheim Pro',
-                fontWeight: FontWeight.w500,
-                height: 1.50,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-  
-  IconData _getIconForLabel(String label) {
-    switch (label) {
-      case 'Home':
-        return Icons.home;
-      case 'Search':
-        return Icons.search;
-      case 'Calendar':
-        return Icons.calendar_today;
-      case 'Message':
-        return Icons.message;
-      case 'Profile':
-        return Icons.person;
-      default:
-        return Icons.circle;
-    }
   }
 }
