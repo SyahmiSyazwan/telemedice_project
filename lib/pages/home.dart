@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:telemedice_project/pages/appointment.dart';
 import 'package:telemedice_project/pages/booking_details.dart';
 import 'package:telemedice_project/pages/medical_record_upload_page.dart';
+import 'package:telemedice_project/pages/patient_medical_record_page.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -17,6 +18,7 @@ class _HomeState extends State<Home> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   String? userName;
   String? userRole;
+  String? userEmail;
 
   @override
   void initState() {
@@ -25,25 +27,28 @@ class _HomeState extends State<Home> {
   }
 
   Future<void> fetchUserDetails() async {
-  final userId = _auth.currentUser?.uid;
-  print("Logged-in User ID: $userId"); // Log the user ID
-  if (userId == null) return;
+    final userId = _auth.currentUser?.uid;
+    print("Logged-in User ID: $userId"); // Log the user ID
+    if (userId == null) return;
 
-  final userDoc = await _firestore.collection('users').doc(userId).get();
-  if (userDoc.exists) {
-    final userData = userDoc.data();
-    print("Firestore Document Data: $userData"); // Log the entire document data
+    final userDoc = await _firestore.collection('users').doc(userId).get();
+    if (userDoc.exists) {
+      final userData = userDoc.data();
+      print(
+          "Firestore Document Data: $userData"); // Log the entire document data
 
-    setState(() {
-      userName = userData?['Name'] ?? 'User'; // Extract Name
-      userRole = userData?['Role'] ?? 'Patient'; // Extract Role
-      print("User Role: $userRole"); // Log the user role
-      print("User Name: $userName"); // Log the user name
-    });
-  } else {
-    print("User document not found in Firestore.");
+      setState(() {
+        userName = userData?['Name'] ?? 'User'; // Extract Name
+        userRole = userData?['Role'] ?? 'Patient'; // Extract Role
+        userEmail = userData?['Email']; // Extract Email
+        print("User Role: $userRole"); // Log the user role
+        print("User Name: $userName"); // Log the user name
+        print("User Email: $userEmail"); // Log the user name
+      });
+    } else {
+      print("User document not found in Firestore.");
+    }
   }
-}
 
   Future<Map<String, dynamic>?> _getUpcomingAppointment() async {
     final userId = _auth.currentUser?.uid;
@@ -245,13 +250,31 @@ class _HomeState extends State<Home> {
               },
             ),
             const SizedBox(height: 10),
-            _buildActionCard(
-              icon: Icons.favorite_border,
-              iconColor: Colors.red,
-              title: "Medical Records",
-              subtitle: "Your Complete Health Records In One Place.",
-              onTap: () {},
-            ),
+            if (userRole == 'Patient') ...[
+              _buildActionCard(
+                icon: Icons.favorite_border,
+                iconColor: Colors.red,
+                title: "Medical Records",
+                subtitle: "Your Complete Health Records In One Place.",
+                onTap: () {
+                  if (userEmail != null) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            PatientMedicalRecordsPage(patientEmail: userEmail!),
+                      ),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                          content: Text(
+                              'Your email is missing. Cannot view medical records.')),
+                    );
+                  }
+                },
+              ),
+            ],
             const SizedBox(height: 10),
             // Conditionally render the "Upload Medical Records" card
             if (userRole == 'Doctor') ...[

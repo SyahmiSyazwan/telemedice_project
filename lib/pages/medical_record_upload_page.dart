@@ -39,32 +39,24 @@ class _MedicalRecordUploadPageState extends State<MedicalRecordUploadPage> {
   }
 
   Future<void> _fetchUsers() async {
-  try {
-    final snapshot = await FirebaseFirestore.instance.collection('users').get();
-    if (snapshot.docs.isEmpty) {
-      print('No users found in the database.');
-    } else {
-      print('Fetched ${snapshot.docs.length} users from the database.');
-      for (var doc in snapshot.docs) {
-        print('User doc: ${doc.data()}');
-      }
-    }
-    final users = snapshot.docs.map((doc) {
-      final data = doc.data();
-      return {
-        'email': data['Email']?.toString() ?? '',
-        'name': data['Name']?.toString() ?? '',
-      };
-    }).where((user) => user['email']!.isNotEmpty).toList();
+    try {
+      final snapshot = await FirebaseFirestore.instance.collection('users').get();
+      final users = snapshot.docs.map((doc) {
+        final data = doc.data();
+        return {
+          'email': data['Email']?.toString() ?? '',
+          'name': data['Name']?.toString() ?? '',
+        };
+      }).where((user) => user['email']!.isNotEmpty).toList();
 
-    setState(() {
-      userList = users;
-      emailList = users.map((u) => u['email']!).toList();
-    });
-  } catch (e) {
-    print('Error fetching users from Firestore: $e');
+      setState(() {
+        userList = users;
+        emailList = users.map((u) => u['email']!).toList();
+      });
+    } catch (e) {
+      print('Error fetching users from Firestore: $e');
+    }
   }
-}
 
   void _onEmailSelected(String? selectedEmail) {
     final user = userList.firstWhere((u) => u['email'] == selectedEmail,
@@ -105,29 +97,37 @@ class _MedicalRecordUploadPageState extends State<MedicalRecordUploadPage> {
           .ref()
           .child('medical_records')
           .child('${DateTime.now().millisecondsSinceEpoch}_$_selectedFileName');
-      final uploadTask = storageRef.putFile(_selectedFile!);
-      final snapshot = await uploadTask;
-      final downloadUrl = await snapshot.ref.getDownloadURL();
 
-      // Save metadata to Firestore
-      await FirebaseFirestore.instance.collection('medical_records').add({
-        'patientEmail': _patientEmailController.text.trim(),
-        'patientName': _patientNameController.text.trim(),
-        'fileUrl': downloadUrl,
-        'fileName': _selectedFileName,
-        'uploadedAt': FieldValue.serverTimestamp(),
-        'type': 'file',
-      });
+      final uploadTask = await storageRef.putFile(_selectedFile!);
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Medical record uploaded successfully')),
-      );
-      setState(() {
-        _selectedFile = null;
-        _selectedFileName = '';
-        _patientEmailController.clear();
-        _patientNameController.clear();
-      });
+      // Only get the download URL if the upload succeeded
+      if (uploadTask.state == TaskState.success) {
+        final downloadUrl = await storageRef.getDownloadURL();
+
+        // Save metadata to Firestore
+        await FirebaseFirestore.instance.collection('medical_records').add({
+          'patientEmail': _patientEmailController.text.trim(),
+          'patientName': _patientNameController.text.trim(),
+          'fileUrl': downloadUrl,
+          'fileName': _selectedFileName,
+          'uploadedAt': FieldValue.serverTimestamp(),
+          'type': 'file',
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Medical record uploaded successfully')),
+        );
+        setState(() {
+          _selectedFile = null;
+          _selectedFileName = '';
+          _patientEmailController.clear();
+          _patientNameController.clear();
+        });
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Upload failed: File could not be uploaded')),
+        );
+      }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Upload failed: $e')),
@@ -513,59 +513,59 @@ class _MedicalRecordUploadPageState extends State<MedicalRecordUploadPage> {
   }
 
   Widget _buildEmailAutocompleteField() {
-  return Autocomplete<String>(
-    optionsBuilder: (TextEditingValue textEditingValue) {
-      if (textEditingValue.text == '') {
-        return const Iterable<String>.empty();
-      }
-      return emailList.where((String option) {
-        return option.toLowerCase().contains(textEditingValue.text.toLowerCase());
-      });
-    },
-    onSelected: (String selection) {
-      _patientEmailController.text = selection;
-      _onEmailSelected(selection); // This autofills the name
-    },
-    fieldViewBuilder: (context, controller, focusNode, onEditingComplete) {
-      // Ensure controller stays in sync with the main one
-      controller.text = _patientEmailController.text;
-      controller.selection = TextSelection.collapsed(offset: controller.text.length);
+    return Autocomplete<String>(
+      optionsBuilder: (TextEditingValue textEditingValue) {
+        if (textEditingValue.text == '') {
+          return const Iterable<String>.empty();
+        }
+        return emailList.where((String option) {
+          return option.toLowerCase().contains(textEditingValue.text.toLowerCase());
+        });
+      },
+      onSelected: (String selection) {
+        _patientEmailController.text = selection;
+        _onEmailSelected(selection); // This autofills the name
+      },
+      fieldViewBuilder: (context, controller, focusNode, onEditingComplete) {
+        // Ensure controller stays in sync with the main one
+        controller.text = _patientEmailController.text;
+        controller.selection = TextSelection.collapsed(offset: controller.text.length);
 
-      return TextFormField(
-        controller: controller,
-        focusNode: focusNode,
-        decoration: InputDecoration(
-          labelText: 'Patient Email',
-          filled: true,
-          fillColor: const Color(0xFFE9F9F7),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide(color: Colors.grey.shade300),
+        return TextFormField(
+          controller: controller,
+          focusNode: focusNode,
+          decoration: InputDecoration(
+            labelText: 'Patient Email',
+            filled: true,
+            fillColor: const Color(0xFFE9F9F7),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(color: Colors.grey.shade300),
+            ),
           ),
-        ),
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return 'Please enter patient email';
-          }
-          if (!RegExp(r'.+@.+\..+').hasMatch(value)) {
-            return 'Enter a valid email';
-          }
-          return null;
-        },
-        onEditingComplete: onEditingComplete,
-        onChanged: (val) {
-          _patientEmailController.text = val;
-          // Check if the entered email exactly matches one in the list
-          final user = userList.firstWhere(
-            (u) => u['email'] == val,
-            orElse: () => {'name': ''},
-          );
-          _patientNameController.text = user['name'] ?? '';
-        },
-      );
-    },
-  );
-}
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Please enter patient email';
+            }
+            if (!RegExp(r'.+@.+\..+').hasMatch(value)) {
+              return 'Enter a valid email';
+            }
+            return null;
+          },
+          onEditingComplete: onEditingComplete,
+          onChanged: (val) {
+            _patientEmailController.text = val;
+            // Check if the entered email exactly matches one in the list
+            final user = userList.firstWhere(
+              (u) => u['email'] == val,
+              orElse: () => {'name': ''},
+            );
+            _patientNameController.text = user['name'] ?? '';
+          },
+        );
+      },
+    );
+  }
 
   Widget _buildFormField({
     required String label,
