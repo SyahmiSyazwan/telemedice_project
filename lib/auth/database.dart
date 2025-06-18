@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:telemedice_project/models/appointment_type.dart';
 
 class DatabaseMethods {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -119,6 +120,7 @@ class DatabaseMethods {
         // final doctorImage = doctorMap['image'] ?? 'assets/images/boy.jpeg';
         final doctorInfo = doctorMap[doctorId] ?? {};
         final bookingDate = data['date'] ?? 'No date';
+        final appointmentType = data['appointmentType'];
 
         return {
           'bookingId': docId,
@@ -130,6 +132,7 @@ class DatabaseMethods {
           'doctorName': doctorInfo['name'] ?? 'Unknown Doctor',
           'doctorImage': doctorInfo['image'] ?? 'assets/images/boy.jpeg',
           'date': bookingDate,
+          'appointmentType': appointmentType,
         };
       }).toList();
     });

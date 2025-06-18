@@ -118,6 +118,7 @@ class _CalendarState extends State<Calendar> {
                           itemCount: bookings.length,
                           itemBuilder: (context, index) {
                             final booking = bookings[index];
+                            
                             return ListTile(
                               leading: const Icon(
                                 Icons.medical_services,
@@ -137,6 +138,7 @@ class _CalendarState extends State<Calendar> {
                               ),
                               isThreeLine: true,
                               onTap: () {
+                                print("Appointment Type: $booking");
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
@@ -151,6 +153,7 @@ class _CalendarState extends State<Calendar> {
                                       date: booking['date'] ?? '',
                                       appointmentType:
                                           booking['appointmentType'] ?? '',
+                                          
                                     ),
                                   ),
                                 );

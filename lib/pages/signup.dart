@@ -4,6 +4,8 @@ import 'package:telemedice_project/auth/database.dart';
 import 'package:telemedice_project/auth/shared.pref.dart';
 import 'package:telemedice_project/pages/bottom_nav.dart';
 import 'package:telemedice_project/pages/login.dart';
+import 'package:telemedice_project/pages/clinic_picker.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class Signup extends StatefulWidget {
   const Signup({super.key});
@@ -18,6 +20,17 @@ class _SignupState extends State<Signup> {
       name = "",
       selectedRole = "Patient",
       staffId = "";
+  String? selectedClinic;
+  LatLng? selectedClinicLocation;
+  String? selectedSpecialist;
+  List<String> specialistOptions = [
+    "ophthalmologist",
+    "neurologist",
+    "cardiologist",
+    "dentist",
+    "pediatrician",
+  ];
+
   TextEditingController namecontroller = TextEditingController();
   TextEditingController passwordcontroller = TextEditingController();
   TextEditingController mailcontroller = TextEditingController();
@@ -43,7 +56,11 @@ class _SignupState extends State<Signup> {
         "Email": mailcontroller.text,
         "Id": uid,
         "Role": selectedRole,
-        if (selectedRole == "Doctor") "StaffId": staffIdController.text,
+        if (selectedRole == "Doctor") ...{
+          "StaffId": staffIdController.text,
+          "Clinic": selectedClinic ?? "",
+          "specialistLabel": selectedSpecialist ?? "",
+        }
       };
 
       if (selectedRole == "Doctor") {
@@ -198,6 +215,96 @@ class _SignupState extends State<Signup> {
                                 hintText: 'Staff ID',
                                 prefixIcon: Icon(Icons.badge_outlined),
                               ),
+                            ),
+                          ),
+                        if (selectedRole == "Doctor")
+                          Padding(
+                            padding: const EdgeInsets.only(top: 20.0),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.local_hospital_outlined,
+                                    color: Colors.teal),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: GestureDetector(
+                                    onTap: () async {
+                                      final result = await Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              const ClinicPicker(),
+                                        ),
+                                      );
+
+                                      if (result != null && result is String) {
+                                        setState(() {
+                                          selectedClinic = result;
+                                        });
+                                      }
+
+                                      if (selectedClinic == null) {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          const SnackBar(
+                                            backgroundColor: Colors.redAccent,
+                                            content:
+                                                Text("Please select a clinic"),
+                                          ),
+                                        );
+                                      }
+                                    },
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 14, horizontal: 12),
+                                      decoration: BoxDecoration(
+                                        border: Border.all(color: Colors.teal),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: Text(
+                                        selectedClinic ??
+                                            "Tap to select clinic location",
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          color: selectedClinic == null
+                                              ? Colors.grey
+                                              : Colors.black,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        if (selectedRole == "Doctor")
+                          Padding(
+                            padding: const EdgeInsets.only(top: 20.0),
+                            child: DropdownButtonFormField<String>(
+                              value: selectedSpecialist,
+                              decoration: const InputDecoration(
+                                prefixIcon:
+                                    Icon(Icons.medical_services_outlined),
+                                border: OutlineInputBorder(),
+                                labelText: 'Specialist Type',
+                              ),
+                              items: specialistOptions
+                                  .map((specialty) => DropdownMenuItem<String>(
+                                        value: specialty,
+                                        child: Text(specialty),
+                                      ))
+                                  .toList(),
+                              onChanged: (newValue) {
+                                setState(() {
+                                  selectedSpecialist = newValue;
+                                });
+                              },
+                              validator: (value) {
+                                if (selectedRole == "Doctor" &&
+                                    (value == null || value.isEmpty)) {
+                                  return "Please select a specialist type";
+                                }
+                                return null;
+                              },
                             ),
                           ),
                         const SizedBox(height: 30),

@@ -384,6 +384,7 @@ class _BookingDetailsState extends State<BookingDetails> {
 
   @override
   Widget build(BuildContext context) {
+    print("Received location: ${widget.location}");
     return Scaffold(
       appBar: AppBar(
         title: const Text("BOOKING DETAIL",
@@ -444,8 +445,6 @@ class _BookingDetailsState extends State<BookingDetails> {
                     color: Colors.grey.shade400,
                   ),
                 ],
-                _buildInfoTile(Icons.access_time, "Time", widget.timeSlot),
-                Divider(height: 15, color: Colors.grey.shade400),
                 if (widget.appointmentType == 'virtual') ...[
                   _buildInfoTile(
                     Icons.video_call,
@@ -453,7 +452,12 @@ class _BookingDetailsState extends State<BookingDetails> {
                     "Click to join",
                     onTap: () => joinMeeting(widget.bookingId),
                   ),
+                  Divider(
+                    height: 15,
+                    color: Colors.grey.shade400,
+                  ),
                 ],
+                _buildInfoTile(Icons.access_time, "Time", widget.timeSlot),
               ]),
             ),
             const SizedBox(height: 40),
