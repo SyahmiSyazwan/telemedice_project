@@ -40,14 +40,18 @@ class _MedicalRecordUploadPageState extends State<MedicalRecordUploadPage> {
 
   Future<void> _fetchUsers() async {
     try {
-      final snapshot = await FirebaseFirestore.instance.collection('users').get();
-      final users = snapshot.docs.map((doc) {
-        final data = doc.data();
-        return {
-          'email': data['Email']?.toString() ?? '',
-          'name': data['Name']?.toString() ?? '',
-        };
-      }).where((user) => user['email']!.isNotEmpty).toList();
+      final snapshot =
+          await FirebaseFirestore.instance.collection('users').get();
+      final users = snapshot.docs
+          .map((doc) {
+            final data = doc.data();
+            return {
+              'email': data['Email']?.toString() ?? '',
+              'name': data['Name']?.toString() ?? '',
+            };
+          })
+          .where((user) => user['email']!.isNotEmpty)
+          .toList();
 
       setState(() {
         userList = users;
@@ -125,7 +129,8 @@ class _MedicalRecordUploadPageState extends State<MedicalRecordUploadPage> {
         });
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Upload failed: File could not be uploaded')),
+          const SnackBar(
+              content: Text('Upload failed: File could not be uploaded')),
         );
       }
     } catch (e) {
@@ -519,7 +524,9 @@ class _MedicalRecordUploadPageState extends State<MedicalRecordUploadPage> {
           return const Iterable<String>.empty();
         }
         return emailList.where((String option) {
-          return option.toLowerCase().contains(textEditingValue.text.toLowerCase());
+          return option
+              .toLowerCase()
+              .contains(textEditingValue.text.toLowerCase());
         });
       },
       onSelected: (String selection) {
@@ -527,12 +534,8 @@ class _MedicalRecordUploadPageState extends State<MedicalRecordUploadPage> {
         _onEmailSelected(selection); // This autofills the name
       },
       fieldViewBuilder: (context, controller, focusNode, onEditingComplete) {
-        // Ensure controller stays in sync with the main one
-        controller.text = _patientEmailController.text;
-        controller.selection = TextSelection.collapsed(offset: controller.text.length);
-
         return TextFormField(
-          controller: controller,
+          controller: controller, // Use the Autocomplete's provided controller
           focusNode: focusNode,
           decoration: InputDecoration(
             labelText: 'Patient Email',
@@ -554,8 +557,8 @@ class _MedicalRecordUploadPageState extends State<MedicalRecordUploadPage> {
           },
           onEditingComplete: onEditingComplete,
           onChanged: (val) {
+            // Only update your controller when the field changes
             _patientEmailController.text = val;
-            // Check if the entered email exactly matches one in the list
             final user = userList.firstWhere(
               (u) => u['email'] == val,
               orElse: () => {'name': ''},
