@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:telemedice_project/models/appointment_type.dart';
 
 class DatabaseMethods {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;

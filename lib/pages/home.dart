@@ -74,7 +74,6 @@ class _HomeState extends State<Home> {
     final data = doc.data();
     final doctorId = data['doctorId'];
 
-    // 用 where 查询，而非直接 doc()
     final doctorSnapshot = await _firestore
         .collection('users')
         .where('id', isEqualTo: doctorId)
