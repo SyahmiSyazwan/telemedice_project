@@ -52,13 +52,13 @@ class _SignupState extends State<Signup> {
       String uid = userCredential.user!.uid;
 
       Map<String, dynamic> addUserInfo = {
-        "Name": namecontroller.text,
-        "Email": mailcontroller.text,
-        "Id": uid,
-        "Role": selectedRole,
+        "name": namecontroller.text,
+        "email": mailcontroller.text,
+        "id": uid,
+        "role": selectedRole,
         if (selectedRole == "Doctor") ...{
-          "StaffId": staffIdController.text,
-          "Clinic": selectedClinic ?? "",
+          "staffId": staffIdController.text,
+          "location": selectedClinic ?? "",
           "specialistLabel": selectedSpecialist ?? "",
         }
       };

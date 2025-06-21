@@ -53,10 +53,10 @@ class _ProfileState extends State<Profile> {
     final data = doc.data();
     if (data == null) return;
 
-    name = data['Name'] ?? user.displayName ?? 'Unknown';
-    email = data['Email'] ?? user.email ?? 'unknown@email.com';
-    role = data['Role'] ?? 'user';
-    staffID = data['StaffId'] ?? 'N/A';
+    name = data['name'] ?? user.displayName ?? 'Unknown';
+    email = data['email'] ?? user.email ?? 'unknown@email.com';
+    role = data['role'] ?? 'user';
+    staffID = data['staffId'] ?? 'N/A';
 
     nameController.text = name!;
     emailController.text = email!;

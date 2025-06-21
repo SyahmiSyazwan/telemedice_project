@@ -38,9 +38,9 @@ class _HomeState extends State<Home> {
           "Firestore Document Data: $userData"); // Log the entire document data
 
       setState(() {
-        userName = userData?['Name'] ?? 'User'; // Extract Name
-        userRole = userData?['Role'] ?? 'Patient'; // Extract Role
-        userEmail = userData?['Email']; // Extract Email
+        userName = userData?['name'] ?? 'User'; // Extract Name
+        userRole = userData?['role'] ?? 'Patient'; // Extract Role
+        userEmail = userData?['email']; // Extract Email
         print("User Role: $userRole"); // Log the user role
         print("User Name: $userName"); // Log the user name
         print("User Email: $userEmail"); // Log the user name
@@ -76,17 +76,17 @@ class _HomeState extends State<Home> {
 
     // 用 where 查询，而非直接 doc()
     final doctorSnapshot = await _firestore
-        .collection('doctors')
+        .collection('users')
         .where('id', isEqualTo: doctorId)
         .limit(1)
         .get();
 
     String doctorName = 'Unknown Doctor';
-    String doctorImage = 'assets/images/boy.jpeg';
+    String doctorImage = 'images/boy.jpeg';
     if (doctorSnapshot.docs.isNotEmpty) {
       final doctorData = doctorSnapshot.docs.first.data();
       doctorName = doctorData['name'] ?? 'Unknown Doctor';
-      doctorImage = doctorData['image'] ?? 'assets/images/boy.jpeg';
+      doctorImage = doctorData['image'] ?? 'images/boy.jpeg';
     }
 
     return {

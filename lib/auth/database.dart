@@ -87,7 +87,6 @@ class DatabaseMethods {
     }
   }
 
-  // 返回指定日期的预约流（包含status='booked'）
   Stream<List<Map<String, dynamic>>> getBookingsStreamByDate(String date) {
     return _firestore
         .collection('appointments')
@@ -100,7 +99,7 @@ class DatabaseMethods {
       final doctorIds = bookings.map((b) => b['doctorId'] as String).toSet();
 
       final doctorsSnapshot = await _firestore
-          .collection('doctors')
+          .collection('users')
           .where('id', whereIn: doctorIds.toList())
           .get();
 
@@ -108,7 +107,7 @@ class DatabaseMethods {
         for (var doc in doctorsSnapshot.docs)
           doc.data()['id']: {
             'name': doc.data()['name'] ?? 'Unknown Doctor',
-            'image': doc.data()['image'] ?? 'assets/images/boy.jpeg',
+            'image': doc.data()['image'] ?? 'images/boy.jpeg',
           }
       };
 
@@ -130,7 +129,7 @@ class DatabaseMethods {
           'specialist': data['specialist'],
           'location': data['location'],
           'doctorName': doctorInfo['name'] ?? 'Unknown Doctor',
-          'doctorImage': doctorInfo['image'] ?? 'assets/images/boy.jpeg',
+          'doctorImage': doctorInfo['image'] ?? 'images/boy.jpeg',
           'date': bookingDate,
           'appointmentType': appointmentType,
         };

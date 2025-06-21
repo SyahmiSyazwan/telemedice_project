@@ -22,7 +22,8 @@ class DoctorSelection extends StatefulWidget {
 class _DoctorSelectionState extends State<DoctorSelection> {
   Future<List<Doctor>> _fetchDoctors() async {
     final snapshot = await FirebaseFirestore.instance
-        .collection('doctors')
+        .collection('users')
+        .where('role', isEqualTo: 'Doctor')
         .where('specialistLabel', isEqualTo: widget.specialistLabel)
         .where('location', isEqualTo: widget.location)
         .get();
@@ -32,10 +33,10 @@ class _DoctorSelectionState extends State<DoctorSelection> {
       return Doctor(
         id: data['id'],
         name: data['name'],
-        image: data['image'],
+        image: data['image'] ?? 'images/boy.jpeg',
         location: data['location'],
-        rating: (data['rating'] as num).toDouble(),
-        reviews: data['reviews'],
+        rating: data['rating'] is num ? (data['rating'] as num).toDouble() : 0.0,
+        reviews: data['reviews'] ?? 0,
         specialistLabel: data['specialistLabel'],
       );
     }).toList();
@@ -45,7 +46,7 @@ class _DoctorSelectionState extends State<DoctorSelection> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("${widget.specialistLabel} DOCTORS",
+        title: Text("${widget.specialistLabel} Doctors",
             style: const TextStyle(color: Colors.black)),
         backgroundColor: Colors.teal.shade100,
         elevation: 0,

@@ -13,7 +13,7 @@ Future<String?> getUserRole() async {
 
   final doc =
       await FirebaseFirestore.instance.collection('users').doc(uid).get();
-  return doc.data()?['Role'];
+  return doc.data()?['role'];
 }
 
 class BottomNavBar extends StatefulWidget {

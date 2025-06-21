@@ -18,7 +18,8 @@ class _SpecialistSelectionState extends State<SpecialistSelection> {
   Future<int> _countDoctorsForSpecialistAndLocation(
       String specialist, String location) async {
     final snapshot = await FirebaseFirestore.instance
-        .collection('doctors')
+        .collection('users')
+        .where('role', isEqualTo: 'Doctor')
         .where('specialistLabel', isEqualTo: specialist)
         .where('location', isEqualTo: location)
         .get();

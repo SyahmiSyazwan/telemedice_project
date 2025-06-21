@@ -338,8 +338,8 @@ class _BookingDetailsState extends State<BookingDetails> {
       final doc =
           await FirebaseFirestore.instance.collection('users').doc(uid).get();
       if (doc.exists) {
-        displayName = doc.data()?['Name'] ?? "Guest";
-        email = doc.data()?['Email'] ?? email;
+        displayName = doc.data()?['name'] ?? "Guest";
+        email = doc.data()?['email'] ?? email;
       }
     }
 
