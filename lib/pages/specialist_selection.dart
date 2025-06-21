@@ -7,14 +7,62 @@ class SpecialistSelection extends StatefulWidget {
   final AppointmentType appointmentType;
   final String location;
 
-  const SpecialistSelection(
-      {super.key, required this.appointmentType, required this.location});
+  const SpecialistSelection({
+    super.key,
+    required this.appointmentType,
+    required this.location,
+  });
 
   @override
   State<SpecialistSelection> createState() => _SpecialistSelectionState();
 }
 
 class _SpecialistSelectionState extends State<SpecialistSelection> {
+  final Map<String, Map<String, dynamic>> specialistInfo = {
+    'pediatrician': {
+      'icon': Icons.child_care,
+      'title': 'Pediatrician',
+      'subtitle': 'Child Specialist',
+    },
+    'cardiologist': {
+      'icon': Icons.favorite,
+      'title': 'Cardiologist',
+      'subtitle': 'Heart Specialist',
+    },
+    'neurologist': {
+      'icon': Icons.psychology_outlined,
+      'title': 'Neurologist',
+      'subtitle': 'Brain Specialist',
+    },
+    'dentist': {
+      'icon': Icons.medical_information_outlined,
+      'title': 'Dentist',
+      'subtitle': 'Dental Surgeon',
+    },
+    'ophthalmologist': {
+      'icon': Icons.remove_red_eye_outlined,
+      'title': 'Ophthalmologist',
+      'subtitle': 'Eye Specialist',
+    },
+  };
+
+  Future<List<String>> _getSpecialistsWithAvailableDoctors() async {
+    final snapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .where('role', isEqualTo: 'Doctor')
+        .where('location', isEqualTo: widget.location)
+        .get();
+
+    final Set<String> uniqueSpecialists = {};
+    for (var doc in snapshot.docs) {
+      final label = doc['specialistLabel'];
+      if (label != null && label is String && label.trim().isNotEmpty) {
+        uniqueSpecialists.add(label);
+      }
+    }
+    return uniqueSpecialists.toList();
+  }
+
   Future<int> _countDoctorsForSpecialistAndLocation(
       String specialist, String location) async {
     final snapshot = await FirebaseFirestore.instance
@@ -23,7 +71,6 @@ class _SpecialistSelectionState extends State<SpecialistSelection> {
         .where('specialistLabel', isEqualTo: specialist)
         .where('location', isEqualTo: location)
         .get();
-
     return snapshot.docs.length;
   }
 
@@ -70,110 +117,57 @@ class _SpecialistSelectionState extends State<SpecialistSelection> {
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: const [
-                Text(
+      body: FutureBuilder<List<String>>(
+        future: _getSpecialistsWithAvailableDoctors(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return const Center(
+              child: Text("No specialists available in this location."),
+            );
+          }
+
+          final specialists = snapshot.data!;
+
+          return SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
                   "Specialist",
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
+                const SizedBox(height: 10),
+                ...specialists.map((label) {
+                  final info = specialistInfo[label];
+                  if (info == null) return const SizedBox.shrink();
+
+                  return _buildSpecialistItem(
+                    icon: info['icon'],
+                    title: info['title'],
+                    subtitle: info['subtitle'],
+                    specialistLabel: label,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => DoctorSelection(
+                            appointmentType: widget.appointmentType,
+                            specialistLabel: label,
+                            location: widget.location,
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                }).toList(),
               ],
             ),
-            const SizedBox(height: 10),
-
-            // can use firebase store the specialist and doctor, but need to admin prototype for insert the specialist and doctor first
-            _buildSpecialistItem(
-              icon: Icons.child_care,
-              title: "Pediatrician",
-              subtitle: "Child Specialist",
-              specialistLabel: "pediatrician",
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => DoctorSelection(
-                            appointmentType: widget.appointmentType,
-                            specialistLabel: "pediatrician",
-                            location: widget.location,
-                          )),
-                );
-              },
-            ),
-            _buildSpecialistItem(
-              icon: Icons.favorite,
-              title: "Cardiologist",
-              subtitle: "Heart Specialist",
-              specialistLabel: "cardiologist",
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => DoctorSelection(
-                            appointmentType: widget.appointmentType,
-                            specialistLabel: "cardiologist",
-                            location: widget.location,
-                          )),
-                );
-              },
-            ),
-            _buildSpecialistItem(
-              icon: Icons.psychology_outlined,
-              title: "Neurologist",
-              subtitle: "Brain Specialist",
-              specialistLabel: "neurologist",
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => DoctorSelection(
-                            appointmentType: widget.appointmentType,
-                            specialistLabel: "neurologist",
-                            location: widget.location,
-                          )),
-                );
-              },
-            ),
-            _buildSpecialistItem(
-              icon: Icons.medical_information_outlined,
-              title: "Dentist",
-              subtitle: "Dental Surgeon",
-              specialistLabel: "dentist",
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => DoctorSelection(
-                            appointmentType: widget.appointmentType,
-                            specialistLabel: "dentist",
-                            location: widget.location,
-                          )),
-                );
-              },
-            ),
-            _buildSpecialistItem(
-              icon: Icons.remove_red_eye_outlined,
-              title: "Ophthalmologist",
-              subtitle: "Eye Specialist",
-              specialistLabel: "ophthalmologist",
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => DoctorSelection(
-                            appointmentType: widget.appointmentType,
-                            specialistLabel: "ophthalmologist",
-                            location: widget.location,
-                          )),
-                );
-              },
-            ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
