@@ -360,12 +360,24 @@ class _SignupState extends State<Signup> {
                     Navigator.push(context,
                         MaterialPageRoute(builder: (context) => Login()));
                   },
-                  child: const Text(
-                    "Already Have an Account? Login",
-                    style: TextStyle(
-                      color: Colors.red,
-                      fontWeight: FontWeight.w500,
-                      fontSize: 16,
+                  child: Text.rich(
+                    TextSpan(
+                      text: "Already Have an Account? ",
+                      style: const TextStyle(
+                        color: Colors.red,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      children: [
+                        TextSpan(
+                          text: "Login",
+                          style: const TextStyle(
+                            color: Colors.black,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),

@@ -465,6 +465,21 @@ class _BookingDetailsState extends State<BookingDetails> {
               children: [
                 Expanded(
                   child: ElevatedButton(
+                    onPressed: _reschedule,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.teal.shade100,
+                      side: BorderSide(color: Colors.teal.shade100),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: const Text("Reschedule",
+                        style: TextStyle(fontSize: 18, color: Colors.black)),
+                  ),
+                ),
+                const SizedBox(width: 20),
+                Expanded(
+                  child: ElevatedButton(
                     onPressed: _isCancelling ? null : _cancelBooking,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.red,
@@ -483,21 +498,6 @@ class _BookingDetailsState extends State<BookingDetails> {
                         : const Text("Cancel Booking",
                             style:
                                 TextStyle(fontSize: 18, color: Colors.black)),
-                  ),
-                ),
-                const SizedBox(width: 20),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: _reschedule,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.teal.shade100,
-                      side: BorderSide(color: Colors.teal.shade100),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12)),
-                    ),
-                    child: const Text("Reschedule",
-                        style: TextStyle(fontSize: 18, color: Colors.black)),
                   ),
                 ),
               ],

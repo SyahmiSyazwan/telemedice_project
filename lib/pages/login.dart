@@ -209,12 +209,25 @@ class _LoginState extends State<Login> {
                       Navigator.push(context,
                           MaterialPageRoute(builder: (context) => Signup()));
                     },
-                    child: const Text(
-                      "Don't Have an Account? Sign up",
-                      style: TextStyle(
+                    child: Text.rich(
+                      TextSpan(
+                        text: "Don't Have an Account? ",
+                        style: const TextStyle(
                           color: Colors.red,
                           fontSize: 16,
-                          fontWeight: FontWeight.w500),
+                          fontWeight: FontWeight.w500,
+                        ),
+                        children: [
+                          TextSpan(
+                            text: "Sign up",
+                            style: const TextStyle(
+                              color: Colors.black,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
