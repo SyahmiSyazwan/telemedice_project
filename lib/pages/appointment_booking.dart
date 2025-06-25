@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
-import 'package:telemedice_project/auth/database.dart';
 import 'package:telemedice_project/models/appointment_type.dart';
 import 'package:telemedice_project/pages/bottom_nav.dart';
 
@@ -49,6 +49,19 @@ class _AppointmentBookingState extends State<AppointmentBooking> {
     return slots;
   }
 
+  Future<List<String>> getBookedTimeSlots(
+      String doctorId, String date, String location, String specialist) async {
+    final query = await FirebaseFirestore.instance
+        .collection('appointments')
+        .where('doctorId', isEqualTo: doctorId)
+        .where('date', isEqualTo: date)
+        .where('location', isEqualTo: location)
+        .where('specialist', isEqualTo: specialist)
+        .where('status', whereIn: ['pending', 'booked'])
+        .get();
+    return query.docs.map((doc) => doc['timeSlot'] as String).toList();
+  }
+
   Future<void> _onDatePicked(DateTime pickedDate) async {
     setState(() {
       selectedDate = pickedDate;
@@ -58,12 +71,50 @@ class _AppointmentBookingState extends State<AppointmentBooking> {
     });
 
     String dateStr = DateFormat('yyyy-MM-dd').format(pickedDate);
-    List<String> booked = await DatabaseMethods().getBookedTimeSlots(
+    List<String> booked = await getBookedTimeSlots(
         widget.doctorId, dateStr, widget.location, widget.specialistLabel);
 
     setState(() {
       bookedSlots = booked;
       isLoading = false;
+    });
+  }
+
+  Future<void> _submitBooking() async {
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+    if (userId == null) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text("Please log in first!")));
+      return;
+    }
+    setState(() => isLoading = true);
+
+    final dateStr = DateFormat('yyyy-MM-dd').format(selectedDate!);
+
+    // Always create as pending!
+    await FirebaseFirestore.instance.collection('appointments').add({
+      'doctorId': widget.doctorId,
+      'doctorName': widget.doctorName,
+      'doctorImage': widget.doctorImage,
+      'specialist': widget.specialistLabel,
+      'location': widget.location,
+      'appointmentType': widget.appointmentType.name,
+      'patientId': userId,
+      'date': dateStr,
+      'timeSlot': selectedTimeSlot,
+      'status': 'pending', // <-- PENDING, not booked!
+      'createdAt': FieldValue.serverTimestamp(),
+    });
+
+    setState(() => isLoading = false);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Booking request sent! Await doctor approval.")));
+    Future.delayed(const Duration(seconds: 1), () {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => BottomNavBar(initialIndex: 1)),
+        (route) => false,
+      );
     });
   }
 
@@ -119,7 +170,6 @@ class _AppointmentBookingState extends State<AppointmentBooking> {
             const SizedBox(height: 10),
             Text(widget.location,
                 style: TextStyle(fontWeight: FontWeight.w600)),
-            // Text(widget.hospitalName, style: TextStyle(color: Colors.black54)),
 
             const SizedBox(height: 20),
             const Divider(),
@@ -128,7 +178,6 @@ class _AppointmentBookingState extends State<AppointmentBooking> {
                 style: TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 10),
 
-            // Date & Time Selector (static for now)
             Row(
               children: [
                 Expanded(
@@ -153,7 +202,7 @@ class _AppointmentBookingState extends State<AppointmentBooking> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(width: 10),
                 Expanded(
                   flex: 1,
                   child: isLoading
@@ -163,13 +212,10 @@ class _AppointmentBookingState extends State<AppointmentBooking> {
                           hint: const Text('Select Time Slot'),
                           value: selectedTimeSlot,
                           items: timeSlots.map((slot) {
-                            // Time format conversion
                             final parts = slot.split(':');
                             final time = DateTime(0, 0, 0, int.parse(parts[0]),
                                 int.parse(parts[1]));
                             final formattedTime = timeFormatter.format(time);
-
-                            // Disable reserved time slots
                             final isBooked = bookedSlots.contains(slot);
 
                             return DropdownMenuItem<String>(
@@ -199,65 +245,22 @@ class _AppointmentBookingState extends State<AppointmentBooking> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: selectedDate != null && selectedTimeSlot != null
-                    ? () async {
-                        final userId = FirebaseAuth.instance.currentUser?.uid;
-                        if (userId == null) {
-                          ScaffoldMessenger.of(context)
-                              .showSnackBar(const SnackBar(
-                            content: Text("Please log in first!"),
-                          ));
-                          return;
-                        }
-
-                        setState(() => isLoading = true);
-
-                        final dateStr =
-                            DateFormat('yyyy-MM-dd').format(selectedDate!);
-
-                        final success = await DatabaseMethods().bookAppointment(
-                            doctorId: widget.doctorId,
-                            patientId: userId,
-                            date: dateStr,
-                            timeSlot: selectedTimeSlot!,
-                            location: widget.location,
-                            appointmentType: widget.appointmentType.name,
-                            specialist: widget.specialistLabel);
-
-                        setState(() => isLoading = false);
-
-                        if (success) {
-                          ScaffoldMessenger.of(context)
-                              .showSnackBar(const SnackBar(
-                            content: Text("Reservation successful!"),
-                          ));
-                          Future.delayed(const Duration(seconds: 1), () {
-                            Navigator.of(context).pushAndRemoveUntil(
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    BottomNavBar(initialIndex: 1),
-                              ),
-                              (route) => false,
-                            );
-                          });
-                        } else {
-                          ScaffoldMessenger.of(context)
-                              .showSnackBar(const SnackBar(
-                            content: Text(
-                                "This time slot has been booked. Please select another time."),
-                          ));
-                        }
-                      }
+                onPressed: selectedDate != null &&
+                        selectedTimeSlot != null &&
+                        !isLoading
+                    ? _submitBooking
                     : null,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor:
-                      selectedDate != null && selectedTimeSlot != null
-                          ? const Color(0xFFB2F2E9)
-                          : Colors.grey,
-                  foregroundColor:
-                      selectedDate != null && selectedTimeSlot != null
-                          ? Colors.black
-                          : Colors.black45,
+                  backgroundColor: selectedDate != null &&
+                          selectedTimeSlot != null &&
+                          !isLoading
+                      ? const Color(0xFFB2F2E9)
+                      : Colors.grey,
+                  foregroundColor: selectedDate != null &&
+                          selectedTimeSlot != null &&
+                          !isLoading
+                      ? Colors.black
+                      : Colors.black45,
                   padding: const EdgeInsets.symmetric(vertical: 15),
                 ),
                 child: isLoading
@@ -266,7 +269,7 @@ class _AppointmentBookingState extends State<AppointmentBooking> {
                         width: 24,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : const Text("Book an Appointment"),
+                    : const Text("Request Appointment"),
               ),
             ),
           ],
