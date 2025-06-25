@@ -6,6 +6,9 @@ import 'package:telemedice_project/pages/calendar.dart';
 import 'package:telemedice_project/pages/home.dart';
 import 'package:telemedice_project/pages/message.dart';
 import 'package:telemedice_project/pages/profile.dart';
+import 'package:telemedice_project/pages/doctor_approval_page.dart';
+import 'package:intl/intl.dart'; // Add this for date formatting
+import 'package:rxdart/rxdart.dart'; // Add this for Rx operations
 
 Future<String?> getUserRole() async {
   final uid = FirebaseAuth.instance.currentUser?.uid;
@@ -26,6 +29,7 @@ class BottomNavBar extends StatefulWidget {
 
 class _BottomNavBarState extends State<BottomNavBar> {
   int currentTabIndex = 0;
+  String? userRole;
 
   late Home homepage;
   late Calendar calendar;
@@ -40,6 +44,52 @@ class _BottomNavBarState extends State<BottomNavBar> {
     messages = Messages();
     profile = Profile();
     currentTabIndex = widget.initialIndex;
+    _checkUserRole();
+  }
+  
+  Future<void> _checkUserRole() async {
+    final role = await getUserRole();
+    setState(() {
+      userRole = role;
+    });
+  }
+
+  void _navigateToDoctorApproval() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const DoctorApprovalPage()),
+    );
+  }
+  
+  // Add this method to count both new appointments and reschedule requests
+  Stream<int> _getPendingRequestsCount() {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) {
+      return Stream.value(0);
+    }
+
+    // Stream for new appointment requests
+    final newAppointmentsStream = FirebaseFirestore.instance
+        .collection('appointments')
+        .where('doctorId', isEqualTo: uid)
+        .where('status', isEqualTo: 'pending')
+        .snapshots()
+        .map((snapshot) => snapshot.docs.length);
+
+    // Stream for reschedule requests
+    final rescheduleRequestsStream = FirebaseFirestore.instance
+        .collection('appointments')
+        .where('doctorId', isEqualTo: uid)
+        .where('rescheduleStatus', isEqualTo: 'pending')
+        .snapshots()
+        .map((snapshot) => snapshot.docs.length);
+
+    // Combine the two streams using RxDart's CombineLatestStream
+    return CombineLatestStream.combine2(
+      newAppointmentsStream,
+      rescheduleRequestsStream,
+      (int newCount, int rescheduleCount) => newCount + rescheduleCount,
+    );
   }
 
   @override
@@ -81,7 +131,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
             backgroundColor: Colors.white,
             color: Colors.black,
             animationDuration: const Duration(milliseconds: 500),
-            index: currentTabIndex,
+            index: currentTabIndex < pages.length ? currentTabIndex : 0,
             onTap: (index) {
               setState(() {
                 currentTabIndex = index;
@@ -89,7 +139,41 @@ class _BottomNavBarState extends State<BottomNavBar> {
             },
             items: items,
           ),
-          body: pages[currentTabIndex],
+          body: Stack(
+            children: [
+              // Main content
+              pages[currentTabIndex < pages.length ? currentTabIndex : 0],
+              
+              // Add floating action button for doctor role
+              if (role == 'Doctor')
+                Positioned(
+                  bottom: 80, // Position above bottom nav bar
+                  right: 16,
+                  child: StreamBuilder<int>(
+                    stream: _getPendingRequestsCount(),
+                    builder: (context, snapshot) {
+                      int pendingCount = snapshot.data ?? 0;
+                      
+                      return FloatingActionButton.extended(
+                        onPressed: _navigateToDoctorApproval,
+                        backgroundColor: const Color(0xFFB2F2E9),
+                        foregroundColor: Colors.black,
+                        elevation: 4,
+                        label: Row(
+                          children: [
+                            const Icon(Icons.approval),
+                            const SizedBox(width: 8),
+                            Text(pendingCount > 0 
+                              ? 'Requests ($pendingCount)' 
+                              : 'Requests'),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ),
+            ],
+          ),
         );
       },
     );

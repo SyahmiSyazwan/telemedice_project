@@ -156,7 +156,8 @@ class _CalendarState extends State<Calendar> {
                                       patientId:
                                           booking['patientId'], // Add this
                                       patientName:
-                                          booking['patientName'], // Add this
+                                          (booking['patientName'] ?? '')
+                                              .toString(), // Add this
                                     ),
                                   ),
                                 );
