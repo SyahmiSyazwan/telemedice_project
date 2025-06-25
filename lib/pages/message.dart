@@ -13,7 +13,7 @@ class _MessagePageState extends State<Messages> {
   final ScrollController _scrollController = ScrollController();
 
   final AIChatService aiChat = AIChatService(
-      "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");
+      ".."); //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
 
   final List<Map<String, String>> messages = []; // List of {sender, message}
 

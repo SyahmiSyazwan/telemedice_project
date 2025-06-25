@@ -153,6 +153,10 @@ class _CalendarState extends State<Calendar> {
                                       date: booking['date'] ?? '',
                                       appointmentType:
                                           booking['appointmentType'] ?? '',
+                                      patientId:
+                                          booking['patientId'], // Add this
+                                      patientName:
+                                          booking['patientName'], // Add this
                                     ),
                                   ),
                                 );

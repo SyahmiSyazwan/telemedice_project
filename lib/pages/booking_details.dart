@@ -15,6 +15,8 @@ class BookingDetails extends StatefulWidget {
   final String location;
   final String date;
   final String appointmentType;
+  final String patientId;
+  final String patientName;
 
   const BookingDetails({
     super.key,
@@ -27,6 +29,8 @@ class BookingDetails extends StatefulWidget {
     required this.location,
     required this.date,
     required this.appointmentType,
+    required this.patientId,
+    required this.patientName,
   });
 
   @override
@@ -34,9 +38,29 @@ class BookingDetails extends StatefulWidget {
 }
 
 class _BookingDetailsState extends State<BookingDetails> {
+  @override
+  void initState() {
+    super.initState();
+    fetchUserRole(); // <-- IMPORTANT!
+  }
+
   bool _isCancelling = false;
+  String? userRole;
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  Future<void> fetchUserRole() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+
+    final doc =
+        await FirebaseFirestore.instance.collection('users').doc(uid).get();
+
+    if (doc.exists) {
+      setState(() {
+        userRole = doc.data()?['role'];
+      });
+    }
+  }
 
   // Cancel appointment
   Future<void> _cancelBooking() async {
@@ -387,7 +411,7 @@ class _BookingDetailsState extends State<BookingDetails> {
     print("Received location: ${widget.location}");
     return Scaffold(
       appBar: AppBar(
-        title: const Text("BOOKING DETAIL",
+        title: const Text("Booking Detail",
             style: TextStyle(
                 color: Colors.black,
                 fontWeight: FontWeight.bold,
@@ -410,7 +434,9 @@ class _BookingDetailsState extends State<BookingDetails> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    widget.doctorName,
+                    FirebaseAuth.instance.currentUser?.uid == widget.doctorId
+                        ? widget.patientName
+                        : widget.doctorName,
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                         fontSize: 20,
@@ -428,11 +454,14 @@ class _BookingDetailsState extends State<BookingDetails> {
                 side: BorderSide(color: Colors.grey.shade400),
               ),
               child: Column(children: [
-                _buildInfoTile(Icons.category, "Specialist", widget.specialist),
-                Divider(
-                  height: 15,
-                  color: Colors.grey.shade500,
-                ),
+                if (userRole != 'Doctor') ...[
+                  _buildInfoTile(
+                      Icons.category, "Specialist", widget.specialist),
+                  Divider(
+                    height: 15,
+                    color: Colors.grey.shade500,
+                  ),
+                ],
                 if (widget.appointmentType == 'inPerson') ...[
                   _buildInfoTile(
                     Icons.location_on,

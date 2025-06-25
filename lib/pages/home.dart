@@ -80,6 +80,7 @@ class _HomeState extends State<Home> {
           .orderBy('timeSlot')
           .limit(1)
           .get();
+      print("Appointments snapshot for doctor: ${snapshot.docs.length}");
     } else {
       return null;
     }
@@ -96,6 +97,19 @@ class _HomeState extends State<Home> {
     String doctorImage = 'images/boy.jpeg';
     String patientName = 'Unknown Patient';
 
+    // Fetch doctor info
+    final doctorSnapshot = await _firestore
+        .collection('users')
+        .where('id', isEqualTo: doctorId)
+        .limit(1)
+        .get();
+    if (doctorSnapshot.docs.isNotEmpty) {
+      final doctorData = doctorSnapshot.docs.first.data();
+      doctorName = doctorData['name'] ?? 'Unknown Doctor';
+      doctorImage = doctorData['image'] ?? 'images/boy.jpeg';
+    }
+
+    // If doctor is logged in, fetch patient name too
     if (userRole == 'Doctor') {
       final patientSnapshot = await _firestore
           .collection('users')
@@ -103,20 +117,9 @@ class _HomeState extends State<Home> {
           .limit(1)
           .get();
       if (patientSnapshot.docs.isNotEmpty) {
-        patientName = patientSnapshot.docs.first.data()['name'] ?? 'Unknown';
+        final patientData = patientSnapshot.docs.first.data();
+        patientName = patientData['name'] ?? 'Unknown Patient';
       }
-    }
-
-    final doctorSnapshot = await _firestore
-        .collection('users')
-        .where('id', isEqualTo: doctorId)
-        .limit(1)
-        .get();
-
-    if (doctorSnapshot.docs.isNotEmpty) {
-      final doctorData = doctorSnapshot.docs.first.data();
-      doctorName = doctorData['name'] ?? 'Unknown Doctor';
-      doctorImage = doctorData['image'] ?? 'images/boy.jpeg';
     }
 
     return {
@@ -124,6 +127,7 @@ class _HomeState extends State<Home> {
       'doctorId': doctorId,
       'doctorName': doctorName,
       'doctorImage': doctorImage,
+      'patientId': patientId,
       'patientName': patientName,
       'timeSlot': data['timeSlot'],
       'specialist': data['specialist'],
@@ -218,7 +222,7 @@ class _HomeState extends State<Home> {
                       userRole == 'Doctor'
                           ? "Appointment with ${appointment['patientName']} at ${appointment['date']} ${appointment['timeSlot']}"
                           : "Appointment with ${appointment['doctorName']} at ${appointment['date']} ${appointment['timeSlot']}",
-                      style: const TextStyle(
+                      style: TextStyle(
                           color: Colors.red, fontWeight: FontWeight.w500),
                       textAlign: TextAlign.justify,
                     ),
@@ -241,6 +245,8 @@ class _HomeState extends State<Home> {
                             location: appointment['location'],
                             date: appointment['date'],
                             appointmentType: appointment['appointmentType'],
+                            patientId: appointment['patientId'],
+                            patientName: appointment['patientName'],
                           ),
                         ),
                       );
