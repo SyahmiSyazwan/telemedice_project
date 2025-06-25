@@ -58,21 +58,54 @@ class _HomeState extends State<Home> {
     final dateStr =
         "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
 
-    final snapshot = await _firestore
-        .collection('appointments')
-        .where('patientId', isEqualTo: userId)
-        .where('status', isEqualTo: 'booked')
-        .where('date', isGreaterThanOrEqualTo: dateStr)
-        .orderBy('date')
-        .orderBy('timeSlot')
-        .limit(1)
-        .get();
+    QuerySnapshot snapshot;
+
+    if (userRole == 'Patient') {
+      snapshot = await _firestore
+          .collection('appointments')
+          .where('patientId', isEqualTo: userId)
+          .where('status', isEqualTo: 'booked')
+          .where('date', isGreaterThanOrEqualTo: dateStr)
+          .orderBy('date')
+          .orderBy('timeSlot')
+          .limit(1)
+          .get();
+    } else if (userRole == 'Doctor') {
+      snapshot = await _firestore
+          .collection('appointments')
+          .where('doctorId', isEqualTo: userId)
+          .where('status', isEqualTo: 'booked')
+          .where('date', isGreaterThanOrEqualTo: dateStr)
+          .orderBy('date')
+          .orderBy('timeSlot')
+          .limit(1)
+          .get();
+    } else {
+      return null;
+    }
 
     if (snapshot.docs.isEmpty) return null;
 
     final doc = snapshot.docs.first;
-    final data = doc.data();
+    final data = doc.data() as Map<String, dynamic>;
+
     final doctorId = data['doctorId'];
+    final patientId = data['patientId'];
+
+    String doctorName = 'Unknown Doctor';
+    String doctorImage = 'images/boy.jpeg';
+    String patientName = 'Unknown Patient';
+
+    if (userRole == 'Doctor') {
+      final patientSnapshot = await _firestore
+          .collection('users')
+          .where('id', isEqualTo: patientId)
+          .limit(1)
+          .get();
+      if (patientSnapshot.docs.isNotEmpty) {
+        patientName = patientSnapshot.docs.first.data()['name'] ?? 'Unknown';
+      }
+    }
 
     final doctorSnapshot = await _firestore
         .collection('users')
@@ -80,8 +113,6 @@ class _HomeState extends State<Home> {
         .limit(1)
         .get();
 
-    String doctorName = 'Unknown Doctor';
-    String doctorImage = 'images/boy.jpeg';
     if (doctorSnapshot.docs.isNotEmpty) {
       final doctorData = doctorSnapshot.docs.first.data();
       doctorName = doctorData['name'] ?? 'Unknown Doctor';
@@ -93,6 +124,7 @@ class _HomeState extends State<Home> {
       'doctorId': doctorId,
       'doctorName': doctorName,
       'doctorImage': doctorImage,
+      'patientName': patientName,
       'timeSlot': data['timeSlot'],
       'specialist': data['specialist'],
       'location': data['location'],
@@ -183,8 +215,10 @@ class _HomeState extends State<Home> {
                     leading:
                         const Icon(Icons.calendar_today, color: Colors.green),
                     title: Text(
-                      "Appointment With ${appointment['doctorName']} At \n${appointment['date']} ${appointment['timeSlot']}",
-                      style: TextStyle(
+                      userRole == 'Doctor'
+                          ? "Appointment with ${appointment['patientName']} at ${appointment['date']} ${appointment['timeSlot']}"
+                          : "Appointment with ${appointment['doctorName']} at ${appointment['date']} ${appointment['timeSlot']}",
+                      style: const TextStyle(
                           color: Colors.red, fontWeight: FontWeight.w500),
                       textAlign: TextAlign.justify,
                     ),

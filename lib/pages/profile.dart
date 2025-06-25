@@ -16,7 +16,7 @@ class Profile extends StatefulWidget {
 
 // Profile state class
 class _ProfileState extends State<Profile> {
-  String? name, email, role, staffID;
+  String? name, email, role, staffID, specialist, clinic;
   final ImagePicker _picker = ImagePicker();
   File? selectedImage;
   bool _isLoading = true;
@@ -57,6 +57,8 @@ class _ProfileState extends State<Profile> {
     email = data['email'] ?? user.email ?? 'unknown@email.com';
     role = data['role'] ?? 'user';
     staffID = data['staffId'] ?? 'N/A';
+    specialist = data['specialistLabel'] ?? 'N/A';
+    clinic = data['location'] ?? 'N/A';
 
     nameController.text = name!;
     emailController.text = email!;
@@ -498,6 +500,18 @@ class _ProfileState extends State<Profile> {
                             icon: Icons.badge_outlined,
                             title: "Staff ID",
                             value: staffID ?? "N/A",
+                          ),
+                        if (role == "Doctor")
+                          _profileDisplayTile(
+                            icon: Icons.medical_services,
+                            title: "Specialist",
+                            value: specialist ?? "N/A",
+                          ),
+                        if (role == "Doctor")
+                          _profileDisplayTile(
+                            icon: Icons.local_hospital,
+                            title: "Clinic",
+                            value: clinic ?? "N/A",
                           ),
                         Container(
                           width: 250,

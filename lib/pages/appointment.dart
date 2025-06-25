@@ -19,7 +19,7 @@ class _AppointmentState extends State<Appointment> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.teal.shade100,
-        title: const Text("APPOINTMENT",
+        title: const Text("Appointment",
             style: TextStyle(
                 color: Colors.black,
                 fontWeight: FontWeight.bold,

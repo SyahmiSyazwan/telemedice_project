@@ -13,7 +13,7 @@ class _MessagePageState extends State<Messages> {
   final ScrollController _scrollController = ScrollController();
 
   final AIChatService aiChat = AIChatService(
-      "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");
+      "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");
 
   final List<Map<String, String>> messages = []; // List of {sender, message}
 
@@ -87,7 +87,7 @@ class _MessagePageState extends State<Messages> {
       appBar: AppBar(
         backgroundColor: Colors.teal.shade100,
         title: const Text(
-          'AI VIRTUAL DOCTOR',
+          'AI Virtual Doctor',
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,

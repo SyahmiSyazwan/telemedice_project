@@ -35,7 +35,7 @@ class _CalendarState extends State<Calendar> {
       appBar: AppBar(
           backgroundColor: Colors.teal.shade100,
           title: const Text(
-            'CALENDER',
+            'Calendar',
             style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           ),
           centerTitle: true,
@@ -118,7 +118,7 @@ class _CalendarState extends State<Calendar> {
                           itemCount: bookings.length,
                           itemBuilder: (context, index) {
                             final booking = bookings[index];
-                            
+
                             return ListTile(
                               leading: const Icon(
                                 Icons.medical_services,
@@ -153,7 +153,6 @@ class _CalendarState extends State<Calendar> {
                                       date: booking['date'] ?? '',
                                       appointmentType:
                                           booking['appointmentType'] ?? '',
-                                          
                                     ),
                                   ),
                                 );
