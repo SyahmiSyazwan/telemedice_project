@@ -53,7 +53,8 @@ class _BookingDetailsState extends State<BookingDetails> {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) return;
 
-    final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+    final doc =
+        await FirebaseFirestore.instance.collection('users').doc(uid).get();
     if (!mounted) return;
     if (doc.exists) {
       setState(() {
@@ -81,7 +82,8 @@ class _BookingDetailsState extends State<BookingDetails> {
           textAlign: TextAlign.center,
           style: TextStyle(fontSize: 18),
         ),
-        actionsPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        actionsPadding:
+            const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         actions: [
           SizedBox(
             width: double.infinity,
@@ -92,7 +94,8 @@ class _BookingDetailsState extends State<BookingDetails> {
                   child: ElevatedButton(
                     onPressed: () => Navigator.pop(context, false),
                     style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 12),
                       backgroundColor: Colors.teal.shade100,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -113,7 +116,8 @@ class _BookingDetailsState extends State<BookingDetails> {
                   child: ElevatedButton(
                     onPressed: () => Navigator.pop(context, true),
                     style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 12),
                       backgroundColor: Colors.red,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -185,17 +189,33 @@ class _BookingDetailsState extends State<BookingDetails> {
       context: context,
       builder: (context) {
         List<String> timeOptions = [
-          '08:00', '08:30', '09:00', '09:30', '10:00', '10:30', '11:00',
-          '11:30', '12:00', '12:30', '13:00', '13:30', '14:00', '14:30',
-          '15:00', '15:30', '16:00', '16:30', '17:00',
+          '08:00',
+          '08:30',
+          '09:00',
+          '09:30',
+          '10:00',
+          '10:30',
+          '11:00',
+          '11:30',
+          '12:00',
+          '12:30',
+          '13:00',
+          '13:30',
+          '14:00',
+          '14:30',
+          '15:00',
+          '15:30',
+          '16:00',
+          '16:30',
+          '17:00',
         ];
 
         return AlertDialog(
           title: const Text("Select New Time Slot",
               style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.black),
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black),
               textAlign: TextAlign.center),
           content: SizedBox(
             width: double.maxFinite,
@@ -214,7 +234,8 @@ class _BookingDetailsState extends State<BookingDetails> {
                         (isCurrent ? " (Current)" : ""),
                     style: TextStyle(
                       color: isBooked ? Colors.grey : Colors.black,
-                      fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal,
+                      fontWeight:
+                          isCurrent ? FontWeight.bold : FontWeight.normal,
                     ),
                   ),
                   enabled: !isBooked,
@@ -282,7 +303,9 @@ class _BookingDetailsState extends State<BookingDetails> {
     );
 
     if (reasonResult != true) return;
-    final reason = reasonController.text.isEmpty ? "No reason provided" : reasonController.text;
+    final reason = reasonController.text.isEmpty
+        ? "No reason provided"
+        : reasonController.text;
 
     final confirm = await showDialog<bool>(
       context: context,
@@ -312,7 +335,8 @@ class _BookingDetailsState extends State<BookingDetails> {
             ),
           ],
         ),
-        actionsPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        actionsPadding:
+            const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         actions: [
           SizedBox(
             width: double.infinity,
@@ -322,7 +346,8 @@ class _BookingDetailsState extends State<BookingDetails> {
                   child: ElevatedButton(
                     onPressed: () => Navigator.pop(context, false),
                     style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 12),
                       backgroundColor: Colors.teal.shade100,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -342,7 +367,8 @@ class _BookingDetailsState extends State<BookingDetails> {
                   child: ElevatedButton(
                     onPressed: () => Navigator.pop(context, true),
                     style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 12),
                       backgroundColor: Colors.teal.shade100,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -403,7 +429,8 @@ class _BookingDetailsState extends State<BookingDetails> {
     String? email = user?.email;
 
     if (uid != null) {
-      final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      final doc =
+          await FirebaseFirestore.instance.collection('users').doc(uid).get();
       if (doc.exists) {
         displayName = doc.data()?['name']?.toString() ?? "Guest";
         email = doc.data()?['email']?.toString() ?? email;
@@ -421,7 +448,8 @@ class _BookingDetailsState extends State<BookingDetails> {
     await JitsiMeet().join(options);
   }
 
-  Widget _buildRescheduleStatusCard(String status, String proposedTime, Map<String, dynamic> appointmentData) {
+  Widget _buildRescheduleStatusCard(String status, String proposedTime,
+      Map<String, dynamic> appointmentData) {
     IconData icon;
     Color color;
     String title;
@@ -432,7 +460,8 @@ class _BookingDetailsState extends State<BookingDetails> {
         icon = Icons.access_time;
         color = Colors.amber;
         title = "Reschedule Pending";
-        message = "Requested new time: $proposedTime\nWaiting for doctor's approval.";
+        message =
+            "Requested new time: $proposedTime\nWaiting for doctor's approval.";
         break;
       case 'approved':
         icon = Icons.check_circle;
@@ -486,7 +515,8 @@ class _BookingDetailsState extends State<BookingDetails> {
                       color: Colors.black87,
                     ),
                   ),
-                  if (status == 'pending' && appointmentData['rescheduleReason'] != null) ...[
+                  if (status == 'pending' &&
+                      appointmentData['rescheduleReason'] != null) ...[
                     const SizedBox(height: 8),
                     Text(
                       "Reason: ${appointmentData['rescheduleReason']}",
@@ -547,7 +577,8 @@ class _BookingDetailsState extends State<BookingDetails> {
     }
   }
 
-  Future<void> _cancelRescheduleRequest(Map<String, dynamic> appointmentData) async {
+  Future<void> _cancelRescheduleRequest(
+      Map<String, dynamic> appointmentData) async {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -565,7 +596,8 @@ class _BookingDetailsState extends State<BookingDetails> {
           textAlign: TextAlign.center,
           style: TextStyle(fontSize: 16),
         ),
-        actionsPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        actionsPadding:
+            const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         actions: [
           ElevatedButton(
             onPressed: () => Navigator.pop(context, false),
@@ -608,7 +640,8 @@ class _BookingDetailsState extends State<BookingDetails> {
     }
   }
 
-  Widget _buildInfoTile(IconData icon, String title, String subtitle, {VoidCallback? onTap}) {
+  Widget _buildInfoTile(IconData icon, String title, String subtitle,
+      {VoidCallback? onTap}) {
     return ListTile(
       leading: Icon(icon, color: Colors.teal.shade300, size: 32),
       title: Text(title,
@@ -623,7 +656,8 @@ class _BookingDetailsState extends State<BookingDetails> {
 
   void _openMap(String location) async {
     final encodedLocation = Uri.encodeComponent(location);
-    final googleMapsUrl = "https://www.google.com/maps/search/?api=1&query=$encodedLocation";
+    final googleMapsUrl =
+        "https://www.google.com/maps/search/?api=1&query=$encodedLocation";
 
     if (await canLaunchUrl(Uri.parse(googleMapsUrl))) {
       await launchUrl(Uri.parse(googleMapsUrl));
@@ -639,7 +673,7 @@ class _BookingDetailsState extends State<BookingDetails> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("BOOKING DETAIL",
+        title: const Text("Booking Detail",
             style: TextStyle(
                 color: Colors.black,
                 fontWeight: FontWeight.bold,
@@ -671,8 +705,10 @@ class _BookingDetailsState extends State<BookingDetails> {
           }
 
           final appointmentData = snapshot.data!.data() as Map<String, dynamic>;
-          final rescheduleStatus = appointmentData['rescheduleStatus']?.toString();
-          final proposedTimeSlot = appointmentData['proposedTimeSlot']?.toString();
+          final rescheduleStatus =
+              appointmentData['rescheduleStatus']?.toString();
+          final proposedTimeSlot =
+              appointmentData['proposedTimeSlot']?.toString();
 
           return SingleChildScrollView(
             child: Padding(
@@ -689,7 +725,8 @@ class _BookingDetailsState extends State<BookingDetails> {
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          FirebaseAuth.instance.currentUser?.uid == widget.doctorId
+                          FirebaseAuth.instance.currentUser?.uid ==
+                                  widget.doctorId
                               ? widget.patientName
                               : widget.doctorName,
                           textAlign: TextAlign.center,
@@ -702,7 +739,6 @@ class _BookingDetailsState extends State<BookingDetails> {
                     ),
                   ),
                   const SizedBox(height: 16),
-
                   if (rescheduleStatus != null) ...[
                     _buildRescheduleStatusCard(
                       rescheduleStatus,
@@ -711,7 +747,6 @@ class _BookingDetailsState extends State<BookingDetails> {
                     ),
                     const SizedBox(height: 16),
                   ],
-
                   Card(
                     margin: EdgeInsets.zero,
                     shape: RoundedRectangleBorder(
@@ -719,7 +754,8 @@ class _BookingDetailsState extends State<BookingDetails> {
                       side: BorderSide(color: Colors.grey.shade400),
                     ),
                     child: Column(children: [
-                      _buildInfoTile(Icons.category, "Specialist", widget.specialist),
+                      _buildInfoTile(
+                          Icons.category, "Specialist", widget.specialist),
                       Divider(
                         height: 15,
                         color: Colors.grey.shade500,
@@ -748,11 +784,11 @@ class _BookingDetailsState extends State<BookingDetails> {
                           color: Colors.grey.shade400,
                         ),
                       ],
-                      _buildInfoTile(Icons.access_time, "Time", widget.timeSlot),
+                      _buildInfoTile(
+                          Icons.access_time, "Time", widget.timeSlot),
                     ]),
                   ),
                   const SizedBox(height: 40),
-
                   if (rescheduleStatus == null) ...[
                     Row(
                       children: [
@@ -767,7 +803,8 @@ class _BookingDetailsState extends State<BookingDetails> {
                                   borderRadius: BorderRadius.circular(12)),
                             ),
                             child: const Text("Reschedule",
-                                style: TextStyle(fontSize: 18, color: Colors.black)),
+                                style: TextStyle(
+                                    fontSize: 18, color: Colors.black)),
                           ),
                         ),
                         const SizedBox(width: 20),
@@ -785,20 +822,24 @@ class _BookingDetailsState extends State<BookingDetails> {
                                 ? const SizedBox(
                                     height: 24,
                                     width: 24,
-                                    child: CircularProgressIndicator(color: Colors.black),
+                                    child: CircularProgressIndicator(
+                                        color: Colors.black),
                                   )
                                 : const Text("Cancel Booking",
-                                    style: TextStyle(fontSize: 18, color: Colors.black)),
+                                    style: TextStyle(
+                                        fontSize: 18, color: Colors.black)),
                           ),
                         ),
                       ],
                     ),
-                  ] else if (rescheduleStatus == 'pending' && userRole == 'Doctor') ...[
+                  ] else if (rescheduleStatus == 'pending' &&
+                      userRole == 'Doctor') ...[
                     Row(
                       children: [
                         Expanded(
                           child: ElevatedButton(
-                            onPressed: () => _approveReschedule(appointmentData),
+                            onPressed: () =>
+                                _approveReschedule(appointmentData),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.green.shade100,
                               side: BorderSide(color: Colors.green.shade100),
@@ -807,7 +848,8 @@ class _BookingDetailsState extends State<BookingDetails> {
                                   borderRadius: BorderRadius.circular(12)),
                             ),
                             child: const Text("Approve Reschedule",
-                                style: TextStyle(fontSize: 18, color: Colors.black)),
+                                style: TextStyle(
+                                    fontSize: 18, color: Colors.black)),
                           ),
                         ),
                         const SizedBox(width: 20),
@@ -822,14 +864,17 @@ class _BookingDetailsState extends State<BookingDetails> {
                                   borderRadius: BorderRadius.circular(12)),
                             ),
                             child: const Text("Reject Reschedule",
-                                style: TextStyle(fontSize: 18, color: Colors.black)),
+                                style: TextStyle(
+                                    fontSize: 18, color: Colors.black)),
                           ),
                         ),
                       ],
                     ),
-                  ] else if (rescheduleStatus == 'pending' && userRole != 'Doctor') ...[
+                  ] else if (rescheduleStatus == 'pending' &&
+                      userRole != 'Doctor') ...[
                     ElevatedButton(
-                      onPressed: () => _cancelRescheduleRequest(appointmentData),
+                      onPressed: () =>
+                          _cancelRescheduleRequest(appointmentData),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.orange.shade100,
                         side: BorderSide(color: Colors.orange.shade100),

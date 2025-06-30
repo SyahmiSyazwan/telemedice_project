@@ -9,7 +9,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-
+  flutter_dotenv: ^5.0.2
   jitsi_meet_flutter_sdk: ^11.2.0
   cupertino_icons: ^1.0.8
   curved_navigation_bar: ^1.0.3
@@ -27,7 +27,8 @@ dependencies:
   table_calendar: ^3.0.9
   url_launcher: ^6.3.1
   http: ^0.13.6
-  file_picker: ^10.1.9   # For picking documents
+  file_picker: ^10.1.9 # For picking documents
+  rxdart: ^0.28.0
 
 dev_dependencies:
   flutter_test:

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../services/ai_chat_service.dart';
 
 class Messages extends StatefulWidget {
@@ -12,8 +13,8 @@ class _MessagePageState extends State<Messages> {
   final TextEditingController _controller = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
-  final AIChatService aiChat = AIChatService(
-      ".."); //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
+  final AIChatService aiChat =
+      AIChatService(dotenv.env['OPENAI_API_KEY'] ?? '');
 
   final List<Map<String, String>> messages = []; // List of {sender, message}
 
