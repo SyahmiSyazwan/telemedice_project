@@ -46,6 +46,20 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+ 
+        <activity
+            android:name="org.jitsi.meet.sdk.JitsiMeetActivity"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenSize"
+            android:screenOrientation="fullSensor"
+            android:windowSoftInputMode="adjustResize"
+             tools:replace="android:configChanges" />
+
+        <activity
+            android:name="org.jitsi.jitsi_meet_flutter_sdk.WrapperJitsiMeetActivity"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
+            android:windowSoftInputMode="adjustResize"
+            tools:replace="android:configChanges" />
+
         <receiver
         android:name=".YourBroadcastReceiver"
         android:exported="true">  <!-- or false -->

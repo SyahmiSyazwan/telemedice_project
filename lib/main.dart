@@ -8,7 +8,7 @@ import 'package:telemedice_project/pages/profile.dart'; // if not already import
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  await dotenv.load();
+  await dotenv.load(fileName: ".env");
   runApp(const MyApp());
 }
 
